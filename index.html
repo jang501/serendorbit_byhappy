@@ -192,34 +192,52 @@
     }
 
     async function postData(data) {
-        try {
-            const response = await fetch(GAS_WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify(data)
-            });
-            return response.ok;
-        } catch(e) {
-            console.error(e);
-            return false;
-        }
+    try {
+        // 구글 스크립트의 리다이렉션과 CORS 정책을 통과하기 위한 옵션 추가
+        const response = await fetch(GAS_WEB_APP_URL, {
+            method: 'POST',
+            mode: 'cors', // CORS 정책 허용 명시
+            headers: {
+                'Content-Type': 'text/plain' // 구글 GAS와의 통신 안정성을 위해 text/plain 권장
+            },
+            body: JSON.stringify(data)
+        });
+        
+        // 구글 웹 앱은 정상 처리 시 JSON 응답을 반환하므로 데이터를 파싱하여 확인합니다.
+        const result = await response.json();
+        return result.status === 'success';
+    } catch(e) {
+        console.error("데이터 전송 중 에러 발생:", e);
+        return false;
     }
+}
 
-    async function saveFeed() {
-        const content = document.getElementById('feedContent').value;
-        const emotion = document.getElementById('feedEmotion').value;
-        const category = document.getElementById('feedCategory').value;
+async function saveFeed() {
+    const content = document.getElementById('feedContent').value;
+    const emotion = document.getElementById('feedEmotion').value;
+    const category = document.getElementById('feedCategory').value;
 
-        if(!content) return alert("행복한 순간을 적어주세요!");
+    if(!content) return alert("행복한 순간을 적어주세요!");
 
-        const payload = { action: 'createFeed', user: '혜리(나)', content, emotion, category };
-        const success = await postData(payload);
-        if(success) {
-            document.getElementById('feedContent').value = '';
-            setTimeout(loadFeeds, 500);
-        } else {
-            alert("기록 전송에 실패했습니다. API 설정을 확인해주세요.");
-        }
+    // 유저 필드가 비어있거나 고정값일 때 발생할 수 있는 오류 방지
+    const payload = { action: 'createFeed', user: '혜리(나)', content, emotion, category };
+    
+    // 버튼을 여러 번 누르지 못하도록 일시적으로 텍스트 변경 (선택 사항)
+    const btn = document.querySelector("button[onclick='saveFeed()']");
+    if(btn) btn.disabled = true;
+
+    const success = await postData(payload);
+    
+    if(btn) btn.disabled = false;
+
+    if(success) {
+        document.getElementById('feedContent').value = '';
+        alert("성공적으로 궤도에 쏘아올렸습니다! 🚀");
+        setTimeout(loadFeeds, 500);
+    } else {
+        alert("기록 전송에 실패했습니다. 구글 앱스 스크립트의 SPREADSHEET_ID가 실제 시트 ID와 일치하는지 다시 한 번 점검해 주세요.");
     }
+}
 
     async function loadFeeds() {
         try {
