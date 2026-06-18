@@ -50,7 +50,7 @@
         .nav-item.active { color: var(--text-beige); }
         
         .capsule-card { background: var(--card-dark); border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--primary-purple); }
-        .room-tag { background: var(--primary-purple); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7 stamp; margin-right: 5px; }
+        .room-tag { background: var(--primary-purple); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin-right: 5px; }
     </style>
 </head>
 <body>
@@ -147,8 +147,7 @@
 </div>
 
 <script>
-    // ⚠️ 본인의 웹 앱 주소가 맞는지 최종 배포 완료 후 주소를 한 번 더 확인하세요!
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw3jWJ7imcmx89WNWcd4hbgiQ8-i6j2iIiDZfk5d8usP-mcRRfLVQqo5vKtPY9kH0mMPw/exec"; 
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw_DYc0mrzz7XN40facCSfwOpoznIjOmwHAy1WTvSzbue8uRl9LVBwF45U8eTkR7Lk4-A/exec"; 
 
     let currentUser = localStorage.getItem('orbit_user_email') || null;
     let currentRoomId = localStorage.getItem('roomId') || 'default';
@@ -332,7 +331,10 @@
                 const emotion = item.Emotion || item.emotion || '😊';
                 const category = item.Category || item.category || '기타';
                 const id = item.ID || item.id || '';
-                const timestamp = item.Timestamp || item.timestamp ? new Date(item.Timestamp).toLocaleDateString() : '';
+                
+                // 시간 데이터 파싱 검증 및 안전 장치 마련
+                const rawTime = item.Timestamp || item.timestamp;
+                const timestamp = rawTime ? new Date(rawTime).toLocaleDateString() : '';
 
                 container.innerHTML += `
                     <div class="feed-item">
@@ -371,7 +373,9 @@
                 const emotion = item.Emotion || item.emotion || '😊';
                 const category = item.Category || item.category || '기타';
                 const id = item.ID || item.id || '';
-                const timestamp = item.Timestamp || item.timestamp ? new Date(item.Timestamp).toLocaleDateString() : '';
+                
+                const rawTime = item.Timestamp || item.timestamp;
+                const timestamp = rawTime ? new Date(rawTime).toLocaleDateString() : '';
 
                 container.innerHTML += `
                     <div class="feed-item" style="border-left: 4px solid var(--secondary-orbit);">
@@ -404,7 +408,7 @@
                 loadFeeds();
                 if(currentUser) loadMyFeeds();
             }
-        } catch(e) { alert("삭제 패배"); }
+        } catch(e) { alert("삭제 실패"); }
     }
 
     async function saveCapsule() {
