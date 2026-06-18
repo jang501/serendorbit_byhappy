@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SERENDI ORBIT - 행복을 보관하는 우주 정거장</title>
+    <style>
+        :root {
+            --primary-purple: #6C5CE7;
+            --secondary-orbit: #A29BFE;
+            --point-orange: #FF7675;
+            --bg-navy: #0F0C20;
+            --card-dark: #1F1B3A;
+            --text-beige: #FDCB6E;
+            --text-light: #F5F6FA;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Apple SD Gothic Neo', sans-serif; }
+        body { background-color: var(--bg-navy); color: var(--text-light); display: flex; justify-content: center; min-height: 100vh; }
+        
+        /* 모바일 프레임 스타일 */
+        .app-container {
+            width: 100%;
+            max-width: 420px;
+            background: linear-gradient(to bottom, #161233, #0F0C20);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            padding-bottom: 70px;
+        }
+
+        /* 상단 헤더 */
+        header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        header h1 { font-size: 1.4rem; color: var(--text-light); letter-spacing: 2px; }
+        header p { font-size: 0.8rem; color: var(--secondary-orbit); }
+
+        /* 메인 컨텐츠 영역 */
+        .content-section { padding: 20px; display: none; overflow-y: auto; flex: 1; }
+        .content-section.active { display: block; }
+
+        /* 오늘의 오비 알림 창 */
+        .obi-box {
+            background: rgba(108, 92, 231, 0.2);
+            border: 1px solid var(--primary-purple);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .obi-avatar { font-size: 2rem; animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .obi-text { font-size: 0.9rem; color: var(--text-beige); line-height: 1.4; }
+
+        /* 입력 폼 */
+        .record-card {
+            background: var(--card-dark);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+        .record-card h3 { font-size: 1rem; margin-bottom: 10px; color: var(--text-beige); }
+        textarea {
+            width: 100%; height: 80px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; color: white; padding: 10px; resize: none; margin-bottom: 10px;
+        }
+        .meta-selects { display: flex; gap: 10px; margin-bottom: 10px; }
+        select {
+            flex: 1; background: #2D2654; border: none; color: white; padding: 8px; border-radius: 8px; font-size: 0.85rem;
+        }
+        button {
+            width: 100%; background: var(--primary-purple); color: white; border: none; padding: 12px;
+            border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        button:hover { background: var(--secondary-orbit); }
+
+        /* 피드 리스트 */
+        .feed-item {
+            background: var(--card-dark); border-radius: 15px; padding: 15px; margin-bottom: 15px;
+            border-left: 4px solid var(--point-orange);
+        }
+        .feed-header { display: flex; justify-content: space-between; font-size: 0.85rem; color: #aaa; margin-bottom: 8px; }
+        .feed-user { color: var(--text-beige); font-weight: bold; }
+        .feed-body { font-size: 0.95rem; line-height: 1.5; margin-bottom: 10px; }
+        .feed-tags { font-size: 0.8rem; color: var(--secondary-orbit); }
+
+        /* 캡슐 보관함 레이아웃 */
+        .capsule-list { display: flex; flex-direction: column; gap: 15px; }
+        .capsule-card {
+            background: linear-gradient(135deg, #2A2452, #1F1B3A);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 15px; padding: 15px; position: relative;
+        }
+        .capsule-dday {
+            position: absolute; top: 15px; right: 15px; background: var(--point-orange);
+            padding: 3px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: bold;
+        }
+
+        /* 하단 내비게이션 바 */
+        nav {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 65px;
+            background: #120E29; display: flex; justify-content: space-around; align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.1); z-index: 100;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; color: #888;
+            cursor: pointer; font-size: 0.75rem; text-decoration: none;
+        }
+        .nav-item.active { color: var(--text-beige); }
+        .nav-item .icon { font-size: 1.3rem; margin-bottom: 3px; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <h1>SERENDI ORBIT</h1>
+        <p>우연히 발견한 행복이 우리를 이어주는 궤도</p>
+    </header>
+
+    <div style="padding: 0 20px; margin-top: 15px;">
+        <div class="obi-box">
+            <div class="obi-avatar">🪐</div>
+            <div class="obi-text" id="obiMessage">"중요한 건 늘 가까이 있어! 오늘 너의 소확행은 무엇이었니?"</div>
+        </div>
+    </div>
+
+    <section id="home-sec" class="content-section active">
+        <div class="record-card">
+            <h3>오늘 나의 소확행 기록하기</h3>
+            <textarea id="feedContent" placeholder="여기에 오늘의 소소한 행복을 기록해보세요..."></textarea>
+            <div class="meta-selects">
+                <select id="feedEmotion">
+                    <option value="😊 행복">😊 행복</option>
+                    <option value="😌 편안">😌 편안</option>
+                    <option value="🥰 설렘">🥰 설렘</option>
+                    <option value="🤪 재미">🤪 재미</option>
+                </select>
+                <select id="feedCategory">
+                    <option value="☕ 카페/맛집">☕ 카페/맛집</option>
+                    <option value="🌇 산책/풍경">🌇 산책/풍경</option>
+                    <option value="📚 휴식/문화">📚 휴식/문화</option>
+                    <option value="✨ 기타">✨ 기타</option>
+                </select>
+            </div>
+            <button onclick="saveFeed()">궤도에 쏘아올리기 🚀</button>
+        </div>
+        <div id="feedSpace">
+            <p style="text-align:center; color:#666;">행성 피드를 불러오는 중...</p>
+        </div>
+    </section>
+
+    <section id="capsule-sec" class="content-section">
+        <div class="record-card" style="border-left: 4px solid var(--primary-purple);">
+            <h3>🫙 타임캡슐 만들기 (그룹/개인)</h3>
+            <input type="text" id="capTitle" placeholder="캡슐 제목 (예: 고3 여름 방학의 행복들)" style="width:100%; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:white; padding:10px; margin-bottom:10px;">
+            <input type="date" id="capDate" style="width:100%; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:white; padding:10px; margin-bottom:10px;">
+            <textarea id="capItems" placeholder="기억하고 싶은 순간들을 적어주세요."></textarea>
+            <button onclick="saveCapsule()" style="background:var(--point-orange)">우주 캡슐 봉인하기 🔒</button>
+        </div>
+        <div class="capsule-list" id="capsuleSpace">
+            </div>
+    </section>
+
+    <nav>
+        <div class="nav-item active" onclick="switchTab('home-sec', this)">
+            <span class="icon">🏠</span><span>HOME</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('capsule-sec', this)">
+            <span class="icon">🫙</span><span>CAPSULE</span>
+        </div>
+    </nav>
+</div>
+
+<script>
+    // ⚠️ 중요: 구글 앱스 스크립트 배포 후 발급받은 웹 앱 웹 URL 주소를 여기에 꼭 기입하세요.
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/XXXXX/exec"; 
+
+    // 오비의 랜덤 웰컴 메시지 데이터
+    const obiQuotes = [
+        "\"오늘 행복 하나 발견했어?\"",
+        "\"중요한 건 늘 가까이 있어!\"",
+        "\"행복은 거창하지 않아도 괜찮아.\"",
+        "\"네가 찾은 행복 궤도가 아름답게 빛나고 있어!\""
+    ];
+    document.getElementById('obiMessage').innerText = obiQuotes[Math.floor(Math.random() * obiQuotes.length)];
+
+    // 탭 전환 기능
+    function switchTab(sectionId, element) {
+        document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        document.getElementById(sectionId).classList.add('active');
+        element.classList.add('active');
+        
+        if(sectionId === 'home-sec') loadFeeds();
+        if(sectionId === 'capsule-sec') loadCapsules();
+    }
+
+    // 구글 시트 데이터 전송 (POST 요청)
+    async function postData(data) {
+        if(GAS_WEB_APP_URL.includes("XXXXX")) {
+            alert("GAS_WEB_APP_URL 주소를 올바르게 설정해주세요.");
+            return false;
+        }
+        try {
+            await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+            return true;
+        } catch(e) {
+            console.error(e);
+            return false;
+        }
+    }
+
+    // HOME: 행복 피드 저장 및 동기화
+    async function saveFeed() {
+        const content = document.getElementById('feedContent').value;
+        const emotion = document.getElementById('feedEmotion').value;
+        const category = document.getElementById('feedCategory').value;
+
+        if(!content) return alert("행복한 순간을 적어주세요!");
+
+        const payload = { action: 'createFeed', user: '혜리(나)', content, emotion, category };
+        const success = await postData(payload);
+        if(success) {
+            document.getElementById('feedContent').value = '';
+            loadFeeds();
+        }
+    }
+
+    // HOME: 구글 시트에서 피드 데이터 목록 로드
+    async function loadFeeds() {
+        const res = await fetch(`${GAS_WEB_APP_URL}?action=getFeeds`);
+        const list = await res.json();
+        const container = document.getElementById('feedSpace');
+        container.innerHTML = '';
+
+        if(list.length === 0) {
+            container.innerHTML = `<p style="text-align:center; color:#666; padding:20px;">궤도에 기록된 첫 행복의 주인공이 되어보세요!</p>`;
+            return;
+        }
+
+        list.reverse().forEach(item => {
+            container.innerHTML += `
+                <div class="feed-item">
+                    <div class="feed-header">
+                        <span class="feed-user">⭐ ${item.User || '익명'}</span>
+                        <span>${new Date(item.Timestamp).toLocaleDateString()}</span>
+                    </div>
+                    <div class="feed-body">${item.Content}</div>
+                    <div class="feed-tags">${item.Emotion} · ${item.Category}</div>
+                </div>
+            `;
+        });
+    }
+
+    // CAPSULE: 타임캡슐 데이터 저장
+    async function saveCapsule() {
+        const title = document.getElementById('capTitle').value;
+        const openDate = document.getElementById('capDate').value;
+        const items = document.getElementById('capItems').value;
+
+        if(!title || !openDate) return alert("제목과 오픈 날짜를 입력해주세요.");
+
+        const payload = { action: 'createCapsule', title, openDate, items };
+        const success = await postData(payload);
+        if(success) {
+            document.getElementById('capTitle').value = '';
+            document.getElementById('capDate').value = '';
+            document.getElementById('capItems').value = '';
+            loadCapsules();
+        }
+    }
+
+    // CAPSULE: 구글 시트에서 타임캡슐 목록 및 D-Day 계산 로드
+    async function loadCapsules() {
+        const res = await fetch(`${GAS_WEB_APP_URL}?action=getCapsules`);
+        const list = await res.json();
+        const container = document.getElementById('capsuleSpace');
+        container.innerHTML = '';
+
+        list.reverse().forEach(item => {
+            const open = new Date(item.OpenDate);
+            const today = new Date();
+            const diffTime = open - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            let dDayText = diffDays > 0 ? `D-${diffDays}` : "✨ OPEN";
+            let contentText = diffDays > 0 ? "🔒 오비가 소중히 지키고 있어요!" : item.Items;
+
+            container.innerHTML += `
+                <div class="capsule-card">
+                    <span class="capsule-dday" style="background:${diffDays > 0 ? 'var(--point-orange)' : 'var(--primary-purple)'}">${dDayText}</span>
+                    <h4 style="color:var(--text-beige); font-size:1rem; margin-bottom:8px;">${item.Title}</h4>
+                    <p style="font-size:0.85rem; color:#aaa; margin-bottom:10px;">개봉 예정일: ${new Date(item.OpenDate).toLocaleDateString()}</p>
+                    <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; font-size:0.9rem;">${contentText}</div>
+                </div>
+            `;
+        });
+    }
+
+    // 초기 화면 진입 시 데이터 로드 실행
+    window.onload = () => {
+        loadFeeds();
+    };
+</script>
+</body>
+</html>
