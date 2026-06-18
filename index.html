@@ -75,6 +75,9 @@
                 <button class="btn-sm" onclick="userAuth('signIn')" style="background:var(--primary-purple); flex:1;">로그인 인증</button>
                 <button class="btn-sm" onclick="userAuth('signUp')" style="background:#2d2654; flex:1;">신규 인증 등록</button>
             </div>
+            <div style="text-align: right; margin-top: 2px;">
+                <span onclick="resetPasswordByEmail()" style="font-size:0.75rem; color:var(--secondary-orbit); cursor:pointer; text-decoration:underline;">비밀번호 변경하기(이메일 인증)</span>
+            </div>
         </div>
         <div id="logoutFormArea" style="display:none; text-align:right; margin-top:5px;">
             <button class="btn-sm" onclick="userLogout()" style="background:#444; width:auto;">로그아웃</button>
@@ -145,7 +148,7 @@
 
 <script>
     // ⚠️ 본인의 구글 웹 앱 주소로 변경해 주세요!
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbydGd02vfvluhsnAT0g7_DYnVzqMETtjC70tLajS5HGSj6uZeJWBgeXIHJtCg1Ha9Nm8w/exec"; 
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw_DYc0mrzz7XN40facCSfwOpoznIjOmwHAy1WTvSzbue8uRl9LVBwF45U8eTkR7Lk4-A/exec"; 
 
     let currentUser = localStorage.getItem('orbit_user_email') || null;
     let currentRoomId = localStorage.getItem('roomId') || 'default';
@@ -171,7 +174,7 @@
         document.getElementById('currentRoom').innerText = currentRoomId === 'default' ? "공용 로비" : `${currentRoomId}번 궤도`;
     }
 
-    // [수정] 이메일 회원가입 및 로그인 연동 처리
+    // 이메일 가입 및 로그인 처리 연동
     async function userAuth(type) {
         const email = document.getElementById('emailInput').value.trim();
         const password = document.getElementById('passwordInput').value.trim();
@@ -205,6 +208,45 @@
         } catch(e) {
             alert("서버 연결 실패");
         }
+    }
+
+    // 이메일 인증 기반 비밀번호 변경 로직
+    async function resetPasswordByEmail() {
+        const email = prompt("비밀번호를 변경할 이메일 주소를 입력해 주세요:");
+        if(!email || !email.includes('@')) return alert("유효한 이메일 주소를 입력하세요.");
+
+        alert("인증 메일을 발송 중입니다. 잠시만 기다려 주세요...");
+
+        try {
+            const res = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action: 'sendAuthCode', email: email })
+            });
+            const result = await res.json();
+
+            if (result.status === 'success') {
+                const userCode = prompt(result.message + "\n이메일로 전송된 6자리 인증번호를 입력해 주세요:");
+                if (userCode && userCode.trim() === result.authCode) {
+                    const newPassword = prompt("인증 성공! 변경하실 새로운 비밀번호를 입력해 주세요 (4자리 이상):");
+                    if (!newPassword || newPassword.trim().length < 4) return alert("비밀번호 조건이 맞지 않아 취소되었습니다.");
+
+                    const changeRes = await fetch(GAS_WEB_APP_URL, {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: { 'Content-Type': 'text/plain' },
+                        body: JSON.stringify({ action: 'changePassword', email: email, newPassword: newPassword.trim() })
+                    });
+                    const changeResult = await changeRes.json();
+                    alert(changeResult.message);
+                } else {
+                    alert("인증번호가 틀렸거나 취소되었습니다.");
+                }
+            } else {
+                alert(result.message);
+            }
+        } catch(e) { alert("서버 통신 오류"); }
     }
 
     function userLogout() {
