@@ -14,98 +14,33 @@
             --text-beige: #FDCB6E;
             --text-light: #F5F6FA;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Apple SD Gothic Neo', sans-serif; }
         body { background-color: var(--bg-navy); color: var(--text-light); display: flex; justify-content: center; min-height: 100vh; }
-        
-        .app-container {
-            width: 100%;
-            max-width: 420px;
-            background: linear-gradient(to bottom, #161233, #0F0C20);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
-            padding-bottom: 70px;
-        }
-
-        header {
-            padding: 20px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        header h1 { font-size: 1.4rem; color: var(--text-light); letter-spacing: 2px; }
-        header p { font-size: 0.8rem; color: var(--secondary-orbit); }
-
+        .app-container { width: 100%; max-width: 420px; background: linear-gradient(to bottom, #161233, #0F0C20); display: flex; flex-direction: column; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.8); padding-bottom: 70px; }
+        header { padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        header h1 { font-size: 1.3rem; color: var(--text-light); letter-spacing: 2px; }
+        .user-profile-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 8px 15px; font-size: 0.85rem; }
+        .btn-sm { padding: 3px 8px; font-size: 0.75rem; border-radius: 5px; cursor: pointer; border: none; background: #444; color: white; }
         .content-section { padding: 20px; display: none; overflow-y: auto; flex: 1; }
         .content-section.active { display: block; }
-
-        .obi-box {
-            background: rgba(108, 92, 231, 0.2);
-            border: 1px solid var(--primary-purple);
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .obi-avatar { font-size: 2rem; animation: float 3s ease-in-out infinite; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-        .obi-text { font-size: 0.9rem; color: var(--text-beige); line-height: 1.4; }
-
-        .record-card {
-            background: var(--card-dark);
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 25px;
-        }
-        .record-card h3 { font-size: 1rem; margin-bottom: 10px; color: var(--text-beige); }
-        textarea {
-            width: 100%; height: 80px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px; color: white; padding: 10px; resize: none; margin-bottom: 10px;
-        }
+        .obi-box { background: rgba(108, 92, 231, 0.2); border: 1px solid var(--primary-purple); border-radius: 15px; padding: 12px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px; }
+        .obi-avatar { font-size: 1.8rem; }
+        .obi-text { font-size: 0.85rem; color: var(--text-beige); }
+        .record-card { background: var(--card-dark); border-radius: 15px; padding: 15px; margin-bottom: 20px; }
+        .record-card h3 { font-size: 0.95rem; margin-bottom: 10px; color: var(--text-beige); }
+        textarea, input[type="text"], input[type="date"] { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; padding: 10px; resize: none; margin-bottom: 10px; font-size: 0.9rem; }
         .meta-selects { display: flex; gap: 10px; margin-bottom: 10px; }
-        select {
-            flex: 1; background: #2D2654; border: none; color: white; padding: 8px; border-radius: 8px; font-size: 0.85rem;
-        }
-        button {
-            width: 100%; background: var(--primary-purple); color: white; border: none; padding: 12px;
-            border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s;
-        }
-        button:hover { background: var(--secondary-orbit); }
-
-        .feed-item {
-            background: var(--card-dark); border-radius: 15px; padding: 15px; margin-bottom: 15px;
-            border-left: 4px solid var(--point-orange);
-        }
-        .feed-header { display: flex; justify-content: space-between; font-size: 0.85rem; color: #aaa; margin-bottom: 8px; }
+        select { flex: 1; background: #2D2654; border: none; color: white; padding: 8px; border-radius: 8px; font-size: 0.85rem; }
+        button { width: 100%; background: var(--primary-purple); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .feed-item { background: var(--card-dark); border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--point-orange); position: relative; }
+        .feed-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: #aaa; margin-bottom: 8px; align-items: center; }
         .feed-user { color: var(--text-beige); font-weight: bold; }
-        .feed-body { font-size: 0.95rem; line-height: 1.5; margin-bottom: 10px; }
-        .feed-tags { font-size: 0.8rem; color: var(--secondary-orbit); }
-
-        .capsule-list { display: flex; flex-direction: column; gap: 15px; }
-        .capsule-card {
-            background: linear-gradient(135deg, #2A2452, #1F1B3A);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 15px; padding: 15px; position: relative;
-        }
-        .capsule-dday {
-            position: absolute; top: 15px; right: 15px; background: var(--point-orange);
-            padding: 3px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: bold;
-        }
-
-        nav {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 65px;
-            background: #120E29; display: flex; justify-content: space-around; align-items: center;
-            border-top: 1px solid rgba(255,255,255,0.1); z-index: 100;
-        }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center; color: #888;
-            cursor: pointer; font-size: 0.75rem; text-decoration: none;
-        }
+        .feed-body { font-size: 0.9rem; line-height: 1.4; margin-bottom: 10px; }
+        .feed-footer { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--secondary-orbit); }
+        .btn-del { background: none; color: #ff7675; width: auto; padding: 0; font-size: 0.75rem; cursor: pointer; font-weight: normal; }
+        nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 65px; background: #120E29; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; cursor: pointer; font-size: 0.75rem; }
         .nav-item.active { color: var(--text-beige); }
-        .nav-item .icon { font-size: 1.3rem; margin-bottom: 3px; }
     </style>
 </head>
 <body>
@@ -113,13 +48,20 @@
 <div class="app-container">
     <header>
         <h1>SERENDI ORBIT</h1>
-        <p>우연히 발견한 행복이 우리를 이어주는 궤도</p>
     </header>
 
-    <div style="padding: 0 20px; margin-top: 15px;">
+    <div class="user-profile-bar">
+        <div>👤 <span id="userName">로그인 필요</span> (<span id="currentRoom">로비</span>)</div>
+        <div>
+            <button class="btn-sm" id="authBtn" onclick="toggleAuth()">로그인</button>
+            <button class="btn-sm" onclick="changeRoom()" style="background:var(--primary-purple)">방 변경</button>
+        </div>
+    </div>
+
+    <div style="padding: 0 20px; margin-top: 10px;">
         <div class="obi-box">
             <div class="obi-avatar">🪐</div>
-            <div class="obi-text" id="obiMessage">"중요한 건 늘 가까이 있어! 오늘 너의 소확행은 무엇이었니?"</div>
+            <div class="obi-text" id="obiMessage">"오늘 어떤 행복한 궤도를 발견했어?"</div>
         </div>
     </div>
 
@@ -132,27 +74,23 @@
                     <option value="😊 행복">😊 행복</option>
                     <option value="😌 편안">😌 편안</option>
                     <option value="🥰 설렘">🥰 설렘</option>
-                    <option value="🤪 재미">🤪 재미</option>
                 </select>
                 <select id="feedCategory">
                     <option value="☕ 카페/맛집">☕ 카페/맛집</option>
                     <option value="🌇 산책/풍경">🌇 산책/풍경</option>
-                    <option value="📚 휴식/문화">📚 휴식/문화</option>
-                    <option value="✨ 기타">✨ 기타</option>
                 </select>
             </div>
             <button onclick="saveFeed()">궤도에 쏘아올리기 🚀</button>
+            <button onclick="downloadLogs()" style="background:#2d2654; margin-top:8px; font-size:0.8rem; padding:8px;">📥 현재 피드 일기 다운로드</button>
         </div>
-        <div id="feedSpace">
-            <p style="text-align:center; color:#666;">행성 피드를 불러오는 중...</p>
-        </div>
+        <div id="feedSpace"></div>
     </section>
 
     <section id="capsule-sec" class="content-section">
         <div class="record-card" style="border-left: 4px solid var(--primary-purple);">
-            <h3>🫙 타임캡슐 만들기 (그룹/개인)</h3>
-            <input type="text" id="capTitle" placeholder="캡슐 제목 (예: 고3 여름 방학의 행복들)" style="width:100%; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:white; padding:10px; margin-bottom:10px;">
-            <input type="date" id="capDate" style="width:100%; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:white; padding:10px; margin-bottom:10px;">
+            <h3>🫙 타임캡슐 만들기</h3>
+            <input type="text" id="capTitle" placeholder="캡슐 제목">
+            <input type="date" id="capDate">
             <textarea id="capItems" placeholder="기억하고 싶은 순간들을 적어주세요."></textarea>
             <button onclick="saveCapsule()" style="background:var(--point-orange)">우주 캡슐 봉인하기 🔒</button>
         </div>
@@ -160,175 +98,183 @@
     </section>
 
     <nav>
-        <div class="nav-item active" onclick="switchTab('home-sec', this)">
-            <span class="icon">🏠</span><span>HOME</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('capsule-sec', this)">
-            <span class="icon">🫙</span><span>CAPSULE</span>
-        </div>
+        <div class="nav-item active" onclick="switchTab('home-sec', this)">🏠<span>HOME</span></div>
+        <div class="nav-item" onclick="switchTab('capsule-sec', this)">🫙<span>CAPSULE</span></div>
     </nav>
 </div>
 
 <script>
-    // ⚠️ 여기 아래 주소에 새로 얻은 실제 Web App URL을 입력하세요!
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxY1bEdudLAO4yRGCfDTpp5kzcTrgZekMozOWOr2EMYBk9RD6MZQhmSDjQYDo3G2109Jg/exec"; 
+    // ⚠️ 내 배포 URL 주소를 꼭 넣어주세요!
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw_DYc0mrzz7XN40facCSfwOpoznIjOmwHAy1WTvSzbue8uRl9LVBwF45U8eTkR7Lk4-A/exec"; 
 
-    const obiQuotes = [
-        "\"오늘 행복 하나 발견했어?\"",
-        "\"중요한 건 늘 가까이 있어!\"",
-        "\"행복은 거창하지 않아도 괜찮아.\"",
-        "\"네가 찾은 행복 궤도가 아름답게 빛나고 있어!\""
-    ];
-    document.getElementById('obiMessage').innerText = obiQuotes[Math.floor(Math.random() * obiQuotes.length)];
+    let currentUser = localStorage.getItem('user') || null;
+    let currentRoomId = localStorage.getItem('roomId') || 'default';
+    let loadedFeedsData = [];
+
+    window.onload = () => {
+        updateUI();
+        loadFeeds();
+    };
+
+    function updateUI() {
+        document.getElementById('userName').innerText = currentUser ? currentUser : "익명 행성";
+        document.getElementById('authBtn').innerText = currentUser ? "로그아웃" : "로그인";
+        document.getElementById('currentRoom').innerText = currentRoomId === 'default' ? "공용 로비" : `${currentRoomId}번 궤도`;
+    }
+
+    // 간단 로그인/로그아웃 구현 (추후 실제 Google OAuth 연동 가능)
+    function toggleAuth() {
+        if (currentUser) {
+            currentUser = null;
+            localStorage.removeItem('user');
+            alert("로그아웃 되었습니다.");
+        } else {
+            const name = prompt("사용하실 닉네임을 입력해 주세요:");
+            if(!name) return;
+            currentUser = name;
+            localStorage.setItem('user', name);
+        }
+        updateUI();
+        loadFeeds();
+    }
+
+    // 방 변경 (방 입장) 기능
+    function changeRoom() {
+        const room = prompt("입장할 방 이름이나 번호를 입력하세요 (비워두면 로비):");
+        currentRoomId = room ? room.trim() : 'default';
+        localStorage.setItem('roomId', currentRoomId);
+        updateUI();
+        loadFeeds();
+        loadCapsules();
+    }
 
     function switchTab(sectionId, element) {
         document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
         document.getElementById(sectionId).classList.add('active');
         element.classList.add('active');
-        
         if(sectionId === 'home-sec') loadFeeds();
         if(sectionId === 'capsule-sec') loadCapsules();
     }
 
     async function postData(data) {
-    try {
-        // 구글 스크립트의 리다이렉션과 CORS 정책을 통과하기 위한 옵션 추가
-        const response = await fetch(GAS_WEB_APP_URL, {
-            method: 'POST',
-            mode: 'cors', // CORS 정책 허용 명시
-            headers: {
-                'Content-Type': 'text/plain' // 구글 GAS와의 통신 안정성을 위해 text/plain 권장
-            },
-            body: JSON.stringify(data)
-        });
-        
-        // 구글 웹 앱은 정상 처리 시 JSON 응답을 반환하므로 데이터를 파싱하여 확인합니다.
-        const result = await response.json();
-        return result.status === 'success';
-    } catch(e) {
-        console.error("데이터 전송 중 에러 발생:", e);
-        return false;
+        try {
+            const response = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            return result.status === 'success';
+        } catch(e) {
+            console.error(e);
+            return false;
+        }
     }
-}
 
-async function saveFeed() {
-    const content = document.getElementById('feedContent').value;
-    const emotion = document.getElementById('feedEmotion').value;
-    const category = document.getElementById('feedCategory').value;
+    async function saveFeed() {
+        const content = document.getElementById('feedContent').value;
+        const emotion = document.getElementById('feedEmotion').value;
+        const category = document.getElementById('feedCategory').value;
+        if(!content) return alert("내용을 입력하세요!");
 
-    if(!content) return alert("행복한 순간을 적어주세요!");
-
-    // 유저 필드가 비어있거나 고정값일 때 발생할 수 있는 오류 방지
-    const payload = { action: 'createFeed', user: '혜리(나)', content, emotion, category };
-    
-    // 버튼을 여러 번 누르지 못하도록 일시적으로 텍스트 변경 (선택 사항)
-    const btn = document.querySelector("button[onclick='saveFeed()']");
-    if(btn) btn.disabled = true;
-
-    const success = await postData(payload);
-    
-    if(btn) btn.disabled = false;
-
-    if(success) {
-        document.getElementById('feedContent').value = '';
-        alert("성공적으로 궤도에 쏘아올렸습니다! 🚀");
-        setTimeout(loadFeeds, 500);
-    } else {
-        alert("기록 전송에 실패했습니다. 구글 앱스 스크립트의 SPREADSHEET_ID가 실제 시트 ID와 일치하는지 다시 한 번 점검해 주세요.");
+        const payload = { action: 'createFeed', roomId: currentRoomId, user: currentUser || '익명', content, emotion, category };
+        if(await postData(payload)) {
+            document.getElementById('feedContent').value = '';
+            loadFeeds();
+        } else { alert("전송 실패"); }
     }
-}
 
     async function loadFeeds() {
+        const container = document.getElementById('feedSpace');
+        container.innerHTML = '<p style="text-align:center; color:#666;">불러오는 중...</p>';
         try {
-            const res = await fetch(`${GAS_WEB_APP_URL}?action=getFeeds`);
-            const list = await res.json();
-            const container = document.getElementById('feedSpace');
+            const res = await fetch(`${GAS_WEB_APP_URL}?action=getFeeds&roomId=${currentRoomId}`);
+            loadedFeedsData = await res.json();
             container.innerHTML = '';
-
-            if(!list || list.length === 0) {
-                container.innerHTML = `<p style="text-align:center; color:#666; padding:20px;">궤도에 기록된 첫 행복의 주인공이 되어보세요!</p>`;
+            if(!loadedFeedsData.length) {
+                container.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">이 궤도에 기록된 행복이 없습니다.</p>';
                 return;
             }
-
-            list.reverse().forEach(item => {
-                if(!item.Content) return;
+            loadedFeedsData.reverse().forEach(item => {
                 container.innerHTML += `
                     <div class="feed-item">
                         <div class="feed-header">
-                            <span class="feed-user">⭐ ${item.User || '익명'}</span>
+                            <span class="feed-user">⭐ ${item.User}</span>
                             <span>${item.Timestamp ? new Date(item.Timestamp).toLocaleDateString() : ''}</span>
                         </div>
                         <div class="feed-body">${item.Content}</div>
-                        <div class="feed-tags">${item.Emotion || '😊'} · ${item.Category || '일상'}</div>
-                    </div>
-                `;
+                        <div class="feed-footer">
+                            <span>${item.Emotion} · ${item.Category}</span>
+                            <button class="btn-del" onclick="deleteItem('deleteFeed', '${item.ID}')">삭제</button>
+                        </div>
+                    </div>`;
             });
-        } catch (e) {
-            console.error(e);
-            document.getElementById('feedSpace').innerHTML = `<p style="text-align:center; color:#ff7675;">API 연결 확인이 필요합니다.</p>`;
-        }
+        } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ff7675;">연결 실패</p>'; }
+    }
+
+    async function deleteItem(action, id) {
+        if(!confirm("정말 이 기록을 우주에서 삭제하시겠습니까?")) return;
+        if(await postData({ action, id })) {
+            alert("삭제되었습니다.");
+            action === 'deleteFeed' ? loadFeeds() : loadCapsules();
+        } else { alert("삭제 실패"); }
     }
 
     async function saveCapsule() {
         const title = document.getElementById('capTitle').value;
         const openDate = document.getElementById('capDate').value;
         const items = document.getElementById('capItems').value;
+        if(!title || !openDate) return alert("필수 항목 입력 누락");
 
-        if(!title || !openDate) return alert("제목과 오픈 날짜를 입력해주세요.");
-
-        const payload = { action: 'createCapsule', title, openDate, items };
-        const success = await postData(payload);
-        if(success) {
+        const payload = { action: 'createCapsule', roomId: currentRoomId, title, openDate, items };
+        if(await postData(payload)) {
             document.getElementById('capTitle').value = '';
             document.getElementById('capDate').value = '';
             document.getElementById('capItems').value = '';
-            setTimeout(loadCapsules, 500);
-        } else {
-            alert("캡슐 저장에 실패했습니다.");
+            loadCapsules();
         }
     }
 
     async function loadCapsules() {
+        const container = document.getElementById('capsuleSpace');
+        container.innerHTML = '';
         try {
-            const res = await fetch(`${GAS_WEB_APP_URL}?action=getCapsules`);
+            const res = await fetch(`${GAS_WEB_APP_URL}?action=getCapsules&roomId=${currentRoomId}`);
             const list = await res.json();
-            const container = document.getElementById('capsuleSpace');
-            container.innerHTML = '';
-
-            if(!list || list.length === 0) {
-                container.innerHTML = `<p style="text-align:center; color:#666; padding:20px;">보관된 타임캡슐이 없습니다.</p>`;
-                return;
-            }
-
+            if(!list.length) return;
             list.reverse().forEach(item => {
-                if(!item.Title) return;
                 const open = new Date(item.OpenDate);
-                const today = new Date();
-                const diffTime = open - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
-                let dDayText = diffDays > 0 ? `D-${diffDays}` : "✨ OPEN";
-                let contentText = diffDays > 0 ? "🔒 오비가 소중히 지키고 있어요!" : (item.Items || item.Items);
-
+                const diffDays = Math.ceil((open - new Date()) / (1000 * 60 * 60 * 24));
+                let contentText = diffDays > 0 ? "🔒 비밀번호를 지키고 있어요!" : item.Items;
                 container.innerHTML += `
                     <div class="capsule-card">
-                        <span class="capsule-dday" style="background:${diffDays > 0 ? 'var(--point-orange)' : 'var(--primary-purple)'}">${dDayText}</span>
-                        <h4 style="color:var(--text-beige); font-size:1rem; margin-bottom:8px;">${item.Title}</h4>
-                        <p style="font-size:0.85rem; color:#aaa; margin-bottom:10px;">개봉 예정일: ${new Date(item.OpenDate).toLocaleDateString()}</p>
-                        <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; font-size:0.9rem;">${contentText}</div>
-                    </div>
-                `;
+                        <h4 style="color:var(--text-beige);">${item.Title}</h4>
+                        <p style="font-size:0.8rem; color:#aaa; margin:5px 0;">개봉일: ${new Date(item.OpenDate).toLocaleDateString()}</p>
+                        <div style="background:rgba(0,0,0,0.2); padding:8px; border-radius:8px; margin-bottom:5px;">${contentText}</div>
+                        <button class="btn-del" onclick="deleteItem('deleteCapsule', '${item.ID}')">캡슐 파기</button>
+                    </div>`;
             });
-        } catch (e) {
-            console.error(e);
-            document.getElementById('capsuleSpace').innerHTML = `<p style="text-align:center; color:#ff7675;">API 연결 확인이 필요합니다.</p>`;
-        }
+        } catch (e) {}
     }
 
-    window.onload = () => {
-        loadFeeds();
-    };
+    // 일기 다운로드 기능
+    function downloadLogs() {
+        if(!loadedFeedsData.length) return alert("다운로드할 피드 데이터가 없습니다.");
+        let txt = `=== SERENDI ORBIT 행복 일기 백업 (${currentRoomId}번 방) ===\n\n`;
+        loadedFeedsData.forEach(item => {
+            txt += `[${new Date(item.Timestamp).toLocaleString()}] ${item.User}님의 행복\n`;
+            txt += `감정: ${item.Emotion} | 카테고리: ${item.Category}\n`;
+            txt += `내용: ${item.Content}\n`;
+            txt += `--------------------------------------------------\n\n`;
+        });
+        const blob = new Blob([txt], { type: 'text/plain;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `serendi_orbit_diary_${currentRoomId}.txt`;
+        link.click();
+    }
 </script>
 </body>
 </html>
