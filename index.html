@@ -20,7 +20,8 @@
         header { padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
         header h1 { font-size: 1.3rem; color: var(--text-light); letter-spacing: 2px; }
         .user-profile-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 8px 15px; font-size: 0.85rem; }
-        .btn-sm { padding: 3px 8px; font-size: 0.75rem; border-radius: 5px; cursor: pointer; border: none; background: #444; color: white; }
+        .btn-group { display: flex; gap: 5px; }
+        .btn-sm { padding: 4px 8px; font-size: 0.75rem; border-radius: 5px; cursor: pointer; border: none; background: #444; color: white; }
         .content-section { padding: 20px; display: none; overflow-y: auto; flex: 1; }
         .content-section.active { display: block; }
         .obi-box { background: rgba(108, 92, 231, 0.2); border: 1px solid var(--primary-purple); border-radius: 15px; padding: 12px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px; }
@@ -41,6 +42,8 @@
         nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 65px; background: #120E29; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; cursor: pointer; font-size: 0.75rem; }
         .nav-item.active { color: var(--text-beige); }
+        
+        .capsule-card { background: var(--card-dark); border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--primary-purple); }
     </style>
 </head>
 <body>
@@ -51,10 +54,11 @@
     </header>
 
     <div class="user-profile-bar">
-        <div>👤 <span id="userName">로그인 필요</span> (<span id="currentRoom">로비</span>)</div>
-        <div>
+        <div>👤 <span id="userName">익명 행성</span> (<span id="currentRoom">공용 로비</span>)</div>
+        <div class="btn-group">
             <button class="btn-sm" id="authBtn" onclick="toggleAuth()">로그인</button>
-            <button class="btn-sm" onclick="changeRoom()" style="background:var(--primary-purple)">방 변경</button>
+            <button class="btn-sm" onclick="createRoom()" style="background:#2d2654">방 만들기</button>
+            <button class="btn-sm" onclick="joinRoom()" style="background:var(--primary-purple)">방 입장</button>
         </div>
     </div>
 
@@ -74,10 +78,13 @@
                     <option value="😊 행복">😊 행복</option>
                     <option value="😌 편안">😌 편안</option>
                     <option value="🥰 설렘">🥰 설렘</option>
+                    <option value="🤪 재미">🤪 재미</option>
                 </select>
                 <select id="feedCategory">
                     <option value="☕ 카페/맛집">☕ 카페/맛집</option>
                     <option value="🌇 산책/풍경">🌇 산책/풍경</option>
+                    <option value="📚 휴식/문화">📚 휴식/문화</option>
+                    <option value="✨ 기타">✨ 기타</option>
                 </select>
             </div>
             <button onclick="saveFeed()">궤도에 쏘아올리기 🚀</button>
@@ -104,7 +111,6 @@
 </div>
 
 <script>
-    // ⚠️ 내 배포 URL 주소를 꼭 넣어주세요!
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw_DYc0mrzz7XN40facCSfwOpoznIjOmwHAy1WTvSzbue8uRl9LVBwF45U8eTkR7Lk4-A/exec"; 
 
     let currentUser = localStorage.getItem('user') || null;
@@ -122,7 +128,6 @@
         document.getElementById('currentRoom').innerText = currentRoomId === 'default' ? "공용 로비" : `${currentRoomId}번 궤도`;
     }
 
-    // 간단 로그인/로그아웃 구현 (추후 실제 Google OAuth 연동 가능)
     function toggleAuth() {
         if (currentUser) {
             currentUser = null;
@@ -138,14 +143,63 @@
         loadFeeds();
     }
 
-    // 방 변경 (방 입장) 기능
-    function changeRoom() {
-        const room = prompt("입장할 방 이름이나 번호를 입력하세요 (비워두면 로비):");
-        currentRoomId = room ? room.trim() : 'default';
-        localStorage.setItem('roomId', currentRoomId);
-        updateUI();
-        loadFeeds();
-        loadCapsules();
+    // [기능 추가] 방 만들기 기능 (비밀번호 설정)
+    async function createRoom() {
+        const roomName = prompt("생성할 새로운 방 이름을 입력하세요 (영문/숫자/한글):");
+        if (!roomName || !roomName.trim()) return;
+        
+        const password = prompt(`[${roomName}] 방의 접속 비밀번호를 설정하세요:`);
+        if (!password) return alert("비밀번호는 필수입니다.");
+
+        const res = await fetch(GAS_WEB_APP_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'createRoom', roomId: roomName.trim(), password: password.trim() })
+        });
+        const result = await res.json();
+        
+        if (result.status === 'success') {
+            alert(result.message);
+        } else {
+            alert(result.message);
+        }
+    }
+
+    // [기능 추가] 방 입장 기능 (비밀번호 확인 검증)
+    async function joinRoom() {
+        const roomName = prompt("입장할 방 이름을 입력하세요 (공용 로비로 가려면 비워두기):");
+        
+        if (!roomName || !roomName.trim()) {
+            currentRoomId = 'default';
+            localStorage.setItem('roomId', currentRoomId);
+            updateUI();
+            loadFeeds();
+            loadCapsules();
+            return;
+        }
+
+        const password = prompt(`[${roomName}] 방의 비밀번호를 입력하세요:`);
+        if (!password) return alert("비밀번호를 입력해야 입장할 수 있습니다.");
+
+        const res = await fetch(GAS_WEB_APP_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'checkRoom', roomId: roomName.trim(), password: password.trim() })
+        });
+        const result = await res.json();
+
+        if (result.status === 'success') {
+            currentRoomId = roomName.trim();
+            localStorage.setItem('roomId', currentRoomId);
+            alert(`[${roomName}] 궤도에 안전하게 입장했습니다! 🌌`);
+            updateUI();
+            loadFeeds();
+            loadCapsules();
+        } else {
+            alert(result.message); // 틀린 비번 알림 등
+        }
     }
 
     function switchTab(sectionId, element) {
@@ -247,7 +301,7 @@
             list.reverse().forEach(item => {
                 const open = new Date(item.OpenDate);
                 const diffDays = Math.ceil((open - new Date()) / (1000 * 60 * 60 * 24));
-                let contentText = diffDays > 0 ? "🔒 비밀번호를 지키고 있어요!" : item.Items;
+                let contentText = diffDays > 0 ? "🔒 개봉일 전까지 비밀번호를 지키고 있어요!" : item.Items;
                 container.innerHTML += `
                     <div class="capsule-card">
                         <h4 style="color:var(--text-beige);">${item.Title}</h4>
@@ -259,10 +313,9 @@
         } catch (e) {}
     }
 
-    // 일기 다운로드 기능
     function downloadLogs() {
         if(!loadedFeedsData.length) return alert("다운로드할 피드 데이터가 없습니다.");
-        let txt = `=== SERENDI ORBIT 행복 일기 백업 (${currentRoomId}번 방) ===\n\n`;
+        let txt = `=== SERENDI ORBIT 행복 일기 백업 (${currentRoomId === 'default' ? '공용 로비' : currentRoomId + '번 방'}) ===\n\n`;
         loadedFeedsData.forEach(item => {
             txt += `[${new Date(item.Timestamp).toLocaleString()}] ${item.User}님의 행복\n`;
             txt += `감정: ${item.Emotion} | 카테고리: ${item.Category}\n`;
