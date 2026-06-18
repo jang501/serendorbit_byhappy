@@ -147,7 +147,7 @@
 </div>
 
 <script>
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycby9FOc6PqjFAEKVlrDEGA7xMWnZfXK1BB_iXioaWt8h31qOY42MYVDzZB1EQDGosHQeMw/exec"; 
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw_DYc0mrzz7XN40facCSfwOpoznIjOmwHAy1WTvSzbue8uRl9LVBwF45U8eTkR7Lk4-A/exec"; 
 
     let currentUser = localStorage.getItem('orbit_user_email') || null;
     let currentRoomId = localStorage.getItem('roomId') || 'default';
@@ -193,7 +193,7 @@
                     currentUser = email;
                     localStorage.setItem('orbit_user_email', currentUser);
                     updateUI();
-                    loadFeeds();
+                    await loadFeeds();
                 }
             } else { alert(result.message); }
         } catch(e) { alert("서버 연결 실패"); }
@@ -307,7 +307,8 @@
             const result = await response.json();
             if(result.status === 'success') {
                 document.getElementById('feedContent').value = '';
-                loadFeeds();
+                // 전송 성공 시 화면 리로드가 완료될 때까지 확실히 대기(await)합니다.
+                await loadFeeds();
             } else { alert("전송 실패"); }
         } catch(e) { alert("통신 에러"); }
     }
@@ -332,7 +333,6 @@
                 const category = item.Category || item.category || '기타';
                 const id = item.ID || item.id || '';
                 
-                // 시간 데이터 파싱 검증 및 안전 장치 마련
                 const rawTime = item.Timestamp || item.timestamp;
                 const timestamp = rawTime ? new Date(rawTime).toLocaleDateString() : '';
 
@@ -405,8 +405,8 @@
             const result = await res.json();
             if(result.status === 'success') {
                 alert("삭제되었습니다.");
-                loadFeeds();
-                if(currentUser) loadMyFeeds();
+                await loadFeeds();
+                if(currentUser) await loadMyFeeds();
             }
         } catch(e) { alert("삭제 실패"); }
     }
@@ -429,18 +429,22 @@
                 document.getElementById('capTitle').value = '';
                 document.getElementById('capDate').value = '';
                 document.getElementById('capItems').value = '';
-                loadCapsules();
+                await loadCapsules();
             }
         } catch(e) { alert("캡슐 전송 실패"); }
     }
 
     async function loadCapsules() {
         const container = document.getElementById('capsuleSpace');
-        container.innerHTML = '';
+        container.innerHTML = '<p style="text-align:center; color:#666;">캡슐 로딩 중...</p>';
         try {
             const res = await fetch(`${GAS_WEB_APP_URL}?action=getCapsules&roomId=${encodeURIComponent(currentRoomId)}`);
             const list = await res.json();
-            if(!list || !list.length) return;
+            container.innerHTML = '';
+            if(!list || !list.length) {
+                container.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">생성된 타임캡슐이 없습니다.</p>';
+                return;
+            }
             list.reverse().forEach(item => {
                 const open = new Date(item.OpenDate);
                 const diffDays = Math.ceil((open - new Date()) / (1000 * 60 * 60 * 24));
@@ -453,7 +457,7 @@
                         <button class="btn-del" onclick="deleteItem('deleteCapsule', '${item.ID}')">캡슐 파기</button>
                     </div>`;
             });
-        } catch (e) {}
+        } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ff7675;">캡슐을 가져오지 못했습니다.</p>'; }
     }
 
     function downloadLogs() {
