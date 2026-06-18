@@ -50,7 +50,7 @@
         .nav-item.active { color: var(--text-beige); }
         
         .capsule-card { background: var(--card-dark); border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--primary-purple); }
-        .room-tag { background: var(--primary-purple); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin-right: 5px; }
+        .room-tag { background: var(--primary-purple); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7 stamp; margin-right: 5px; }
     </style>
 </head>
 <body>
@@ -76,7 +76,7 @@
                 <button class="btn-sm" onclick="userAuth('signUp')" style="background:#2d2654; flex:1;">신규 인증 등록</button>
             </div>
             <div style="text-align: right; margin-top: 2px;">
-                <span onclick="resetPasswordByEmail()" style="font-size:0.75rem; color:var(--secondary-orbit); cursor:pointer; text-decoration:underline;">비밀번호 변경하기(이메일 인증)</span>
+                <span onclick="resetPasswordByEmail()" style="font-size:0.75rem; color:var(--secondary-orbit); cursor:pointer; text-decoration:underline;">비밀번호 변경하기</span>
             </div>
         </div>
         <div id="logoutFormArea" style="display:none; text-align:right; margin-top:5px;">
@@ -147,7 +147,7 @@
 </div>
 
 <script>
-    // ⚠️ 본인의 구글 웹 앱 주소로 변경해 주세요!
+    // ⚠️ 본인의 웹 앱 주소가 맞는지 최종 배포 완료 후 주소를 한 번 더 확인하세요!
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw3jWJ7imcmx89WNWcd4hbgiQ8-i6j2iIiDZfk5d8usP-mcRRfLVQqo5vKtPY9kH0mMPw/exec"; 
 
     let currentUser = localStorage.getItem('orbit_user_email') || null;
@@ -168,8 +168,6 @@
             document.getElementById('userName').innerText = "비로그인 상태 (익명)";
             document.getElementById('loginFormArea').style.display = 'flex';
             document.getElementById('logoutFormArea').style.display = 'none';
-            document.getElementById('emailInput').value = '';
-            document.getElementById('passwordInput').value = '';
         }
         document.getElementById('currentRoom').innerText = currentRoomId === 'default' ? "공용 로비" : `${currentRoomId}번 궤도`;
     }
@@ -181,14 +179,12 @@
         if(!email || !email.includes('@')) return alert("올바른 이메일 형식을 입력해 주세요.");
         if(!password || password.length < 4) return alert("비밀번호는 최소 4자리 이상이어야 합니다.");
 
-        const payload = { action: type, email, password };
-        
         try {
             const res = await fetch(GAS_WEB_APP_URL, {
                 method: 'POST',
                 mode: 'cors',
                 headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({ action: type, email, password })
             });
             const result = await res.json();
             
@@ -199,21 +195,15 @@
                     localStorage.setItem('orbit_user_email', currentUser);
                     updateUI();
                     loadFeeds();
-                    if(document.getElementById('my-sec').classList.contains('active')) loadMyFeeds();
                 }
-            } else {
-                alert(result.message);
-            }
-        } catch(e) {
-            alert("서버 연결 실패");
-        }
+            } else { alert(result.message); }
+        } catch(e) { alert("서버 연결 실패"); }
     }
 
     async function resetPasswordByEmail() {
         const email = prompt("비밀번호를 변경할 이메일 주소를 입력해 주세요:");
         if(!email || !email.includes('@')) return alert("유효한 이메일 주소를 입력하세요.");
-
-        alert("인증 메일을 발송 중입니다. 잠시만 기다려 주세요...");
+        alert("인증 메일을 발송 중입니다...");
 
         try {
             const res = await fetch(GAS_WEB_APP_URL, {
@@ -225,10 +215,10 @@
             const result = await res.json();
 
             if (result.status === 'success') {
-                const userCode = prompt(result.message + "\n이메일로 전송된 6자리 인증번호를 입력해 주세요:");
+                const userCode = prompt("이메일로 전송된 6자리 인증번호를 입력해 주세요:");
                 if (userCode && userCode.trim() === result.authCode.toString()) {
-                    const newPassword = prompt("인증 성공! 변경하실 새로운 비밀번호를 입력해 주세요 (4자리 이상):");
-                    if (!newPassword || newPassword.trim().length < 4) return alert("비밀번호 조건이 맞지 않아 취소되었습니다.");
+                    const newPassword = prompt("변경하실 새로운 비밀번호를 입력해 주세요 (4자리 이상):");
+                    if (!newPassword || newPassword.trim().length < 4) return alert("비밀번호 조건이 맞지 않습니다.");
 
                     const changeRes = await fetch(GAS_WEB_APP_URL, {
                         method: 'POST',
@@ -238,12 +228,8 @@
                     });
                     const changeResult = await changeRes.json();
                     alert(changeResult.message);
-                } else {
-                    alert("인증번호가 틀렸거나 취소되었습니다.");
-                }
-            } else {
-                alert(result.message);
-            }
+                } else { alert("인증번호가 일치하지 않습니다."); }
+            } else { alert(result.message); }
         } catch(e) { alert("서버 통신 오류"); }
     }
 
@@ -251,16 +237,13 @@
         if(!confirm("로그아웃 하시겠습니까?")) return;
         currentUser = null;
         localStorage.removeItem('orbit_user_email');
-        alert("로그아웃 되었습니다.");
-        updateUI();
-        loadFeeds();
-        if(document.getElementById('my-sec').classList.contains('active')) loadMyFeeds();
+        updateUI(); loadFeeds();
     }
 
     async function createRoom() {
         const roomName = prompt("생성할 새로운 방 이름을 입력하세요:");
         if (!roomName || !roomName.trim()) return;
-        const password = prompt(`[${roomName}] 방의 접속 비밀번호를 설정하세요:`);
+        const password = prompt(`[${roomName}] 방의 비밀번호를 설정하세요:`);
         if (!password) return alert("비밀번호는 필수입니다.");
 
         const res = await fetch(GAS_WEB_APP_URL, {
@@ -278,7 +261,7 @@
         if (!roomName || !roomName.trim()) {
             currentRoomId = 'default';
             localStorage.setItem('roomId', currentRoomId);
-            updateUI(); loadFeeds(); loadCapsules(); return;
+            updateUI(); loadFeeds(); return;
         }
         const password = prompt(`[${roomName}] 방의 비밀번호를 입력하세요:`);
         if (!password) return alert("비밀번호를 입력해야 합니다.");
@@ -294,8 +277,8 @@
         if (result.status === 'success') {
             currentRoomId = roomName.trim();
             localStorage.setItem('roomId', currentRoomId);
-            alert(`[${roomName}] 궤도에 안전하게 입장했습니다! 🌌`);
-            updateUI(); loadFeeds(); loadCapsules();
+            alert(`[${roomName}] 궤도 입장 완료!`);
+            updateUI(); loadFeeds();
         } else { alert(result.message); }
     }
 
@@ -309,38 +292,25 @@
         if(sectionId === 'my-sec') loadMyFeeds();
     }
 
-    async function postData(data) {
-        try {
-            const response = await fetch(GAS_WEB_APP_URL, {
-                method: 'POST',
-                mode: 'cors',
-                headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify(data)
-            });
-            const result = await response.json();
-            return result.status === 'success';
-        } catch(e) { return false; }
-    }
-
     async function saveFeed() {
         const content = document.getElementById('feedContent').value;
         const emotion = document.getElementById('feedEmotion').value;
         const category = document.getElementById('feedCategory').value;
         if(!content) return alert("내용을 입력하세요!");
 
-        const payload = { 
-            action: 'createFeed', 
-            roomId: currentRoomId, 
-            user: currentUser || '익명 행성', 
-            content, 
-            emotion, 
-            category 
-        };
-        
-        if(await postData(payload)) {
-            document.getElementById('feedContent').value = '';
-            loadFeeds();
-        } else { alert("전송 실패"); }
+        try {
+            const response = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action: 'createFeed', roomId: currentRoomId, user: currentUser || '익명 행성', content, emotion, category })
+            });
+            const result = await response.json();
+            if(result.status === 'success') {
+                document.getElementById('feedContent').value = '';
+                loadFeeds();
+            } else { alert("전송 실패"); }
+        } catch(e) { alert("통신 에러"); }
     }
 
     async function loadFeeds() {
@@ -352,7 +322,7 @@
             container.innerHTML = '';
             
             if(!loadedFeedsData || !loadedFeedsData.length) {
-                container.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">이 궤도에 기록된 행복이 없습니다.</p>';
+                container.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">기록된 행복이 없습니다.</p>';
                 return;
             }
             
@@ -362,7 +332,7 @@
                 const emotion = item.Emotion || item.emotion || '😊';
                 const category = item.Category || item.category || '기타';
                 const id = item.ID || item.id || '';
-                const timestamp = item.Timestamp || item.timestamp ? new Date(item.Timestamp || item.timestamp).toLocaleDateString() : '';
+                const timestamp = item.Timestamp || item.timestamp ? new Date(item.Timestamp).toLocaleDateString() : '';
 
                 container.innerHTML += `
                     <div class="feed-item">
@@ -377,25 +347,22 @@
                         </div>
                     </div>`;
             });
-        } catch (e) { 
-            console.error(e);
-            container.innerHTML = '<p style="text-align:center; color:#ff7675;">데이터를 불러오지 못했습니다.</p>'; 
-        }
+        } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ff7675;">데이터를 불러오지 못했습니다.</p>'; }
     }
 
     async function loadMyFeeds() {
         const container = document.getElementById('myFeedSpace');
         if(!currentUser) {
-            container.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">상단에서 이메일 로그인 인증을 완료해야 내 기록 조회가 가능합니다.</p>';
+            container.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">로그인 인증 후 조회가 가능합니다.</p>';
             return;
         }
-        container.innerHTML = '<p style="text-align:center; color:#666;">내 우주 흔적을 검증하여 불러오는 중...</p>';
+        container.innerHTML = '<p style="text-align:center; color:#666;">불러오는 중...</p>';
         try {
             const res = await fetch(`${GAS_WEB_APP_URL}?action=getMyFeeds&email=${encodeURIComponent(currentUser)}`);
             const myFeeds = await res.json();
             container.innerHTML = '';
             if(!myFeeds || !myFeeds.length) {
-                container.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">이 이메일로 기록된 내역이 없습니다.</p>';
+                container.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">작성된 내역이 없습니다.</p>';
                 return;
             }
             myFeeds.reverse().forEach(item => {
@@ -404,7 +371,7 @@
                 const emotion = item.Emotion || item.emotion || '😊';
                 const category = item.Category || item.category || '기타';
                 const id = item.ID || item.id || '';
-                const timestamp = item.Timestamp || item.timestamp ? new Date(item.Timestamp || item.timestamp).toLocaleDateString() : '';
+                const timestamp = item.Timestamp || item.timestamp ? new Date(item.Timestamp).toLocaleDateString() : '';
 
                 container.innerHTML += `
                     <div class="feed-item" style="border-left: 4px solid var(--secondary-orbit);">
@@ -419,16 +386,25 @@
                         </div>
                     </div>`;
             });
-        } catch(e) { container.innerHTML = '<p style="text-align:center; color:#ff7675;">데이터를 불러오지 못했습니다.</p>'; }
+        } catch(e) { container.innerHTML = '<p style="text-align:center; color:#ff7675;">데이터 로딩 실패</p>'; }
     }
 
     async function deleteItem(action, id) {
-        if(!confirm("정말 이 기록을 우주에서 삭제하시겠습니까?")) return;
-        if(await postData({ action, id })) {
-            alert("삭제되었습니다.");
-            loadFeeds();
-            if(currentUser) loadMyFeeds();
-        } else { alert("삭제 실패"); }
+        if(!confirm("정말 삭제하시겠습니까?")) return;
+        try {
+            const res = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action, id })
+            });
+            const result = await res.json();
+            if(result.status === 'success') {
+                alert("삭제되었습니다.");
+                loadFeeds();
+                if(currentUser) loadMyFeeds();
+            }
+        } catch(e) { alert("삭제 패배"); }
     }
 
     async function saveCapsule() {
@@ -437,13 +413,21 @@
         const items = document.getElementById('capItems').value;
         if(!title || !openDate) return alert("필수 항목 입력 누락");
 
-        const payload = { action: 'createCapsule', roomId: currentRoomId, title, openDate, items };
-        if(await postData(payload)) {
-            document.getElementById('capTitle').value = '';
-            document.getElementById('capDate').value = '';
-            document.getElementById('capItems').value = '';
-            loadCapsules();
-        }
+        try {
+            const res = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action: 'createCapsule', roomId: currentRoomId, title, openDate, items })
+            });
+            const result = await res.json();
+            if(result.status === 'success') {
+                document.getElementById('capTitle').value = '';
+                document.getElementById('capDate').value = '';
+                document.getElementById('capItems').value = '';
+                loadCapsules();
+            }
+        } catch(e) { alert("캡슐 전송 실패"); }
     }
 
     async function loadCapsules() {
@@ -469,18 +453,15 @@
     }
 
     function downloadLogs() {
-        if(!loadedFeedsData || !loadedFeedsData.length) return alert("다운로드할 피드 데이터가 없습니다.");
-        let txt = `=== SERENDI ORBIT 행복 일기 백업 (${currentRoomId === 'default' ? '공용 로비' : currentRoomId + '번 방'}) ===\n\n`;
+        if(!loadedFeedsData || !loadedFeedsData.length) return alert("다운로드할 데이터가 없습니다.");
+        let txt = `=== SERENDI ORBIT 행복 일기 백업 ===\n\n`;
         loadedFeedsData.forEach(item => {
-            txt += `[${new Date(item.Timestamp).toLocaleString()}] ${item.User || item.user || '익명'}님의 행복\n`;
-            txt += `감정: ${item.Emotion || item.emotion} | 카테고리: ${item.Category || item.category}\n`;
-            txt += `내용: ${item.Content || item.content}\n`;
-            txt += `--------------------------------------------------\n\n`;
+            txt += `[${new Date(item.Timestamp).toLocaleString()}] ${item.User || '익명'}님의 행복\n내용: ${item.Content}\n\n`;
         });
         const blob = new Blob([txt], { type: 'text/plain;charset=utf-8;' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `serendi_orbit_diary_${currentRoomId}.txt`;
+        link.download = `serendi_orbit_diary.txt`;
         link.click();
     }
 </script>
