@@ -344,16 +344,46 @@
     }
 
     async function loadFeeds() {
-        const container = document.getElementById('feedSpace');
-        container.innerHTML = '<p style="text-align:center; color:#666;">불러오는 중...</p>';
-        try {
-            const res = await fetch(`${GAS_WEB_APP_URL}?action=getFeeds&roomId=${encodeURIComponent(currentRoomId)}`);
-            loadedFeedsData = await res.json();
-            container.innerHTML = '';
-            if(!loadedFeedsData || !loadedFeedsData.length) {
-                container.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">이 궤도에 기록된 행복이 없습니다.</p>';
-                return;
-            }
+    const container = document.getElementById('feedSpace');
+    container.innerHTML = '<p style="text-align:center; color:#666;">불러오는 중...</p>';
+    try {
+        const res = await fetch(`${GAS_WEB_APP_URL}?action=getFeeds&roomId=${encodeURIComponent(currentRoomId)}`);
+        loadedFeedsData = await res.json();
+        container.innerHTML = '';
+        
+        if(!loadedFeedsData || !loadedFeedsData.length) {
+            container.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">이 궤도에 기록된 행복이 없습니다.</p>';
+            return;
+        }
+        
+        // 최신글이 위로 오도록 정렬 후 출력
+        loadedFeedsData.reverse().forEach(item => {
+            // 대소문자 무관하게 데이터를 안전하게 가져오기 위한 예외 처리
+            const user = item.User || item.user || '익명 행성';
+            const content = item.Content || item.content || '';
+            const emotion = item.Emotion || item.emotion || '😊';
+            const category = item.Category || item.category || '기타';
+            const id = item.ID || item.id || '';
+            const timestamp = item.Timestamp || item.timestamp ? new Date(item.Timestamp || item.timestamp).toLocaleDateString() : '';
+
+            container.innerHTML += `
+                <div class="feed-item">
+                    <div class="feed-header">
+                        <span class="feed-user">⭐ ${user}</span>
+                        <span>${timestamp}</span>
+                    </div>
+                    <div class="feed-body">${content}</div>
+                    <div class="feed-footer">
+                        <span>${emotion} · ${category}</span>
+                        <button class="btn-del" onclick="deleteItem('deleteFeed', '${id}')">삭제</button>
+                    </div>
+                </div>`;
+        });
+    } catch (e) { 
+        console.error(e);
+        container.innerHTML = '<p style="text-align:center; color:#ff7675;">데이터 표시 중 오류가 발생했습니다.</p>'; 
+    }
+}
             loadedFeedsData.reverse().forEach(item => {
                 container.innerHTML += `
                     <div class="feed-item">
@@ -371,21 +401,44 @@
         } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ff7675;">연결 실패</p>'; }
     }
 
-    async function loadMyFeeds() {
-        const container = document.getElementById('myFeedSpace');
-        if(!currentUser) {
-            container.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">상단에서 이메일 로그인 인증을 완료해야 내 기록 조회가 가능합니다.</p>';
+   async function loadMyFeeds() {
+    const container = document.getElementById('myFeedSpace');
+    if(!currentUser) {
+        container.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">상단에서 이메일 로그인 인증을 완료해야 내 기록 조회가 가능합니다.</p>';
+        return;
+    }
+    container.innerHTML = '<p style="text-align:center; color:#666;">내 우주 흔적을 검증하여 불러오는 중...</p>';
+    try {
+        const res = await fetch(`${GAS_WEB_APP_URL}?action=getMyFeeds&email=${encodeURIComponent(currentUser)}`);
+        const myFeeds = await res.json();
+        container.innerHTML = '';
+        if(!myFeeds || !myFeeds.length) {
+            container.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">이 이메일로 기록된 내역이 없습니다.</p>';
             return;
         }
-        container.innerHTML = '<p style="text-align:center; color:#666;">내 우주 흔적을 검증하여 불러오는 중...</p>';
-        try {
-            const res = await fetch(`${GAS_WEB_APP_URL}?action=getMyFeeds&email=${encodeURIComponent(currentUser)}`);
-            const myFeeds = await res.json();
-            container.innerHTML = '';
-            if(!myFeeds || !myFeeds.length) {
-                container.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">이 이메일로 기록된 내역이 없습니다.</p>';
-                return;
-            }
+        myFeeds.reverse().forEach(item => {
+            const roomId = item.RoomID || item.roomid || 'default';
+            const content = item.Content || item.content || '';
+            const emotion = item.Emotion || item.emotion || '😊';
+            const category = item.Category || item.category || '기타';
+            const id = item.ID || item.id || '';
+            const timestamp = item.Timestamp || item.timestamp ? new Date(item.Timestamp || item.timestamp).toLocaleDateString() : '';
+
+            container.innerHTML += `
+                <div class="feed-item" style="border-left: 4px solid var(--secondary-orbit);">
+                    <div class="feed-header">
+                        <span class="feed-user"><span class="room-tag">🪐 ${roomId === 'default' ? '공용 로비' : roomId}</span></span>
+                        <span>${timestamp}</span>
+                    </div>
+                    <div class="feed-body">${content}</div>
+                    <div class="feed-footer">
+                        <span>${emotion} · ${category}</span>
+                        <button class="btn-del" onclick="deleteItem('deleteFeed', '${id}')">삭제</button>
+                    </div>
+                </div>`;
+        });
+    } catch(e) { container.innerHTML = '<p style="text-align:center; color:#ff7675;">데이터를 불러오지 못했습니다.</p>'; }
+}
             myFeeds.reverse().forEach(item => {
                 container.innerHTML += `
                     <div class="feed-item" style="border-left: 4px solid var(--secondary-orbit);">
