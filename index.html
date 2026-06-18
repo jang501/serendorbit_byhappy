@@ -50,7 +50,7 @@
         .nav-item.active { color: var(--text-beige); }
         
         .capsule-card { background: var(--card-dark); border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--primary-purple); }
-        .room-tag { background: var(--primary-purple); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin-right: 5px; }
+        .room-tag { background: var(--primary-purple); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7 ceramic; margin-right: 5px; }
     </style>
 </head>
 <body>
@@ -148,7 +148,7 @@
 
 <script>
     // ⚠️ 본인의 구글 웹 앱 주소로 변경해 주세요!
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbySIniwpJAuBcGR8U_1wb0Rr1BPaiF0e7P9iXVYv_K8JjxFm6fHVdIz9GE5Xopl0teXcQ/exec"; 
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxeZk46iwxL-Xl1tREgrKAsUnaqd1INIvojssWh0wjBkfaDZJoB84F8yXar9aiwcv_xuQ/exec"; 
 
     let currentUser = localStorage.getItem('orbit_user_email') || null;
     let currentRoomId = localStorage.getItem('roomId') || 'default';
@@ -174,7 +174,6 @@
         document.getElementById('currentRoom').innerText = currentRoomId === 'default' ? "공용 로비" : `${currentRoomId}번 궤도`;
     }
 
-    // 이메일 가입 및 로그인 처리 연동
     async function userAuth(type) {
         const email = document.getElementById('emailInput').value.trim();
         const password = document.getElementById('passwordInput').value.trim();
@@ -210,7 +209,6 @@
         }
     }
 
-    // 이메일 인증 기반 비밀번호 변경 로직
     async function resetPasswordByEmail() {
         const email = prompt("비밀번호를 변경할 이메일 주소를 입력해 주세요:");
         if(!email || !email.includes('@')) return alert("유효한 이메일 주소를 입력하세요.");
@@ -228,7 +226,7 @@
 
             if (result.status === 'success') {
                 const userCode = prompt(result.message + "\n이메일로 전송된 6자리 인증번호를 입력해 주세요:");
-                if (userCode && userCode.trim() === result.authCode) {
+                if (userCode && userCode.trim() === result.authCode.toString()) {
                     const newPassword = prompt("인증 성공! 변경하실 새로운 비밀번호를 입력해 주세요 (4자리 이상):");
                     if (!newPassword || newPassword.trim().length < 4) return alert("비밀번호 조건이 맞지 않아 취소되었습니다.");
 
@@ -349,10 +347,10 @@
         const container = document.getElementById('feedSpace');
         container.innerHTML = '<p style="text-align:center; color:#666;">불러오는 중...</p>';
         try {
-            const res = await fetch(`${GAS_WEB_APP_URL}?action=getFeeds&roomId=${currentRoomId}`);
+            const res = await fetch(`${GAS_WEB_APP_URL}?action=getFeeds&roomId=${encodeURIComponent(currentRoomId)}`);
             loadedFeedsData = await res.json();
             container.innerHTML = '';
-            if(!loadedFeedsData.length) {
+            if(!loadedFeedsData || !loadedFeedsData.length) {
                 container.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">이 궤도에 기록된 행복이 없습니다.</p>';
                 return;
             }
@@ -384,7 +382,7 @@
             const res = await fetch(`${GAS_WEB_APP_URL}?action=getMyFeeds&email=${encodeURIComponent(currentUser)}`);
             const myFeeds = await res.json();
             container.innerHTML = '';
-            if(!myFeeds.length) {
+            if(!myFeeds || !myFeeds.length) {
                 container.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">이 이메일로 기록된 내역이 없습니다.</p>';
                 return;
             }
@@ -433,9 +431,9 @@
         const container = document.getElementById('capsuleSpace');
         container.innerHTML = '';
         try {
-            const res = await fetch(`${GAS_WEB_APP_URL}?action=getCapsules&roomId=${currentRoomId}`);
+            const res = await fetch(`${GAS_WEB_APP_URL}?action=getCapsules&roomId=${encodeURIComponent(currentRoomId)}`);
             const list = await res.json();
-            if(!list.length) return;
+            if(!list || !list.length) return;
             list.reverse().forEach(item => {
                 const open = new Date(item.OpenDate);
                 const diffDays = Math.ceil((open - new Date()) / (1000 * 60 * 60 * 24));
@@ -452,7 +450,7 @@
     }
 
     function downloadLogs() {
-        if(!loadedFeedsData.length) return alert("다운로드할 피드 데이터가 없습니다.");
+        if(!loadedFeedsData || !loadedFeedsData.length) return alert("다운로드할 피드 데이터가 없습니다.");
         let txt = `=== SERENDI ORBIT 행복 일기 백업 (${currentRoomId === 'default' ? '공용 로비' : currentRoomId + '번 방'}) ===\n\n`;
         loadedFeedsData.forEach(item => {
             txt += `[${new Date(item.Timestamp).toLocaleString()}] ${item.User}님의 행복\n`;
