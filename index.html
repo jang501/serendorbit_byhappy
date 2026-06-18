@@ -170,7 +170,7 @@
 </div>
 
 <script>
-    // ⚠️ 구글 스크립트 배포 후 얻은 실제 Web App URL을 반드시 아래에 넣어주세요!
+    // ⚠️ 여기 아래 주소에 새로 얻은 실제 Web App URL을 입력하세요!
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycby-mnsZYjL6zwJ11G-Lc60kNHgdtve4f-WabCSC_UogFFuDDSt_4-RToMeC6jMWy4oyMA/exec"; 
 
     const obiQuotes = [
@@ -215,7 +215,7 @@
         const success = await postData(payload);
         if(success) {
             document.getElementById('feedContent').value = '';
-            setTimeout(loadFeeds, 500); // 시트 반영을 위한 미세한 딜레이 후 로드
+            setTimeout(loadFeeds, 500);
         } else {
             alert("기록 전송에 실패했습니다. API 설정을 확인해주세요.");
         }
@@ -234,7 +234,7 @@
             }
 
             list.reverse().forEach(item => {
-                if(!item.Content) return; // 빈 데이터 패스
+                if(!item.Content) return;
                 container.innerHTML += `
                     <div class="feed-item">
                         <div class="feed-header">
