@@ -18,7 +18,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Apple SD Gothic Neo', sans-serif; }
         body { background-color: var(--bg-navy); color: var(--text-light); display: flex; justify-content: center; min-height: 100vh; }
         
-        /* 모바일 프레임 스타일 */
         .app-container {
             width: 100%;
             max-width: 420px;
@@ -30,7 +29,6 @@
             padding-bottom: 70px;
         }
 
-        /* 상단 헤더 */
         header {
             padding: 20px;
             text-align: center;
@@ -39,11 +37,9 @@
         header h1 { font-size: 1.4rem; color: var(--text-light); letter-spacing: 2px; }
         header p { font-size: 0.8rem; color: var(--secondary-orbit); }
 
-        /* 메인 컨텐츠 영역 */
         .content-section { padding: 20px; display: none; overflow-y: auto; flex: 1; }
         .content-section.active { display: block; }
 
-        /* 오늘의 오비 알림 창 */
         .obi-box {
             background: rgba(108, 92, 231, 0.2);
             border: 1px solid var(--primary-purple);
@@ -58,7 +54,6 @@
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
         .obi-text { font-size: 0.9rem; color: var(--text-beige); line-height: 1.4; }
 
-        /* 입력 폼 */
         .record-card {
             background: var(--card-dark);
             border-radius: 15px;
@@ -80,7 +75,6 @@
         }
         button:hover { background: var(--secondary-orbit); }
 
-        /* 피드 리스트 */
         .feed-item {
             background: var(--card-dark); border-radius: 15px; padding: 15px; margin-bottom: 15px;
             border-left: 4px solid var(--point-orange);
@@ -90,7 +84,6 @@
         .feed-body { font-size: 0.95rem; line-height: 1.5; margin-bottom: 10px; }
         .feed-tags { font-size: 0.8rem; color: var(--secondary-orbit); }
 
-        /* 캡슐 보관함 레이아웃 */
         .capsule-list { display: flex; flex-direction: column; gap: 15px; }
         .capsule-card {
             background: linear-gradient(135deg, #2A2452, #1F1B3A);
@@ -102,7 +95,6 @@
             padding: 3px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: bold;
         }
 
-        /* 하단 내비게이션 바 */
         nav {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 65px;
             background: #120E29; display: flex; justify-content: space-around; align-items: center;
@@ -164,8 +156,7 @@
             <textarea id="capItems" placeholder="기억하고 싶은 순간들을 적어주세요."></textarea>
             <button onclick="saveCapsule()" style="background:var(--point-orange)">우주 캡슐 봉인하기 🔒</button>
         </div>
-        <div class="capsule-list" id="capsuleSpace">
-            </div>
+        <div class="capsule-list" id="capsuleSpace"></div>
     </section>
 
     <nav>
@@ -179,11 +170,9 @@
 </div>
 
 <script>
-    // ⚠️ 구글 앱스 스크립트(GAS) 웹 앱 URL 주소입니다.
-    // 1단계에서 새로 배포(Deploy)한 뒤 얻은 '웹 앱 URL'이 있다면 아래 변수에 최종 교체해 주셔야 작동합니다!
+    // ⚠️ 구글 스크립트 배포 후 얻은 실제 Web App URL을 반드시 아래에 넣어주세요!
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxY5bS6xQ0hiix1p2WTHxdlsEgtJg2nMIhhEBuu5bQ-NOjalkgEvBPJmm659kjf3X_pyA/exec"; 
 
-    // 오비의 랜덤 웰컴 메시지 데이터
     const obiQuotes = [
         "\"오늘 행복 하나 발견했어?\"",
         "\"중요한 건 늘 가까이 있어!\"",
@@ -192,7 +181,6 @@
     ];
     document.getElementById('obiMessage').innerText = obiQuotes[Math.floor(Math.random() * obiQuotes.length)];
 
-    // 탭 전환 기능
     function switchTab(sectionId, element) {
         document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
@@ -203,21 +191,19 @@
         if(sectionId === 'capsule-sec') loadCapsules();
     }
 
-    // 구글 시트 데이터 전송 (POST 요청)
     async function postData(data) {
         try {
-            await fetch(GAS_WEB_APP_URL, {
+            const response = await fetch(GAS_WEB_APP_URL, {
                 method: 'POST',
                 body: JSON.stringify(data)
             });
-            return true;
+            return response.ok;
         } catch(e) {
             console.error(e);
             return false;
         }
     }
 
-    // HOME: 행복 피드 저장 및 동기화
     async function saveFeed() {
         const content = document.getElementById('feedContent').value;
         const emotion = document.getElementById('feedEmotion').value;
@@ -229,11 +215,12 @@
         const success = await postData(payload);
         if(success) {
             document.getElementById('feedContent').value = '';
-            loadFeeds();
+            setTimeout(loadFeeds, 500); // 시트 반영을 위한 미세한 딜레이 후 로드
+        } else {
+            alert("기록 전송에 실패했습니다. API 설정을 확인해주세요.");
         }
     }
 
-    // HOME: 구글 시트에서 피드 데이터 목록 로드
     async function loadFeeds() {
         try {
             const res = await fetch(`${GAS_WEB_APP_URL}?action=getFeeds`);
@@ -241,29 +228,30 @@
             const container = document.getElementById('feedSpace');
             container.innerHTML = '';
 
-            if(list.length === 0) {
+            if(!list || list.length === 0) {
                 container.innerHTML = `<p style="text-align:center; color:#666; padding:20px;">궤도에 기록된 첫 행복의 주인공이 되어보세요!</p>`;
                 return;
             }
 
             list.reverse().forEach(item => {
+                if(!item.Content) return; // 빈 데이터 패스
                 container.innerHTML += `
                     <div class="feed-item">
                         <div class="feed-header">
                             <span class="feed-user">⭐ ${item.User || '익명'}</span>
-                            <span>${new Date(item.Timestamp).toLocaleDateString()}</span>
+                            <span>${item.Timestamp ? new Date(item.Timestamp).toLocaleDateString() : ''}</span>
                         </div>
                         <div class="feed-body">${item.Content}</div>
-                        <div class="feed-tags">${item.Emotion} · ${item.Category}</div>
+                        <div class="feed-tags">${item.Emotion || '😊'} · ${item.Category || '일상'}</div>
                     </div>
                 `;
             });
         } catch (e) {
+            console.error(e);
             document.getElementById('feedSpace').innerHTML = `<p style="text-align:center; color:#ff7675;">API 연결 확인이 필요합니다.</p>`;
         }
     }
 
-    // CAPSULE: 타임캡슐 데이터 저장
     async function saveCapsule() {
         const title = document.getElementById('capTitle').value;
         const openDate = document.getElementById('capDate').value;
@@ -277,11 +265,12 @@
             document.getElementById('capTitle').value = '';
             document.getElementById('capDate').value = '';
             document.getElementById('capItems').value = '';
-            loadCapsules();
+            setTimeout(loadCapsules, 500);
+        } else {
+            alert("캡슐 저장에 실패했습니다.");
         }
     }
 
-    // CAPSULE: 구글 시트에서 타임캡슐 목록 및 D-Day 계산 로드
     async function loadCapsules() {
         try {
             const res = await fetch(`${GAS_WEB_APP_URL}?action=getCapsules`);
@@ -289,14 +278,20 @@
             const container = document.getElementById('capsuleSpace');
             container.innerHTML = '';
 
+            if(!list || list.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color:#666; padding:20px;">보관된 타임캡슐이 없습니다.</p>`;
+                return;
+            }
+
             list.reverse().forEach(item => {
+                if(!item.Title) return;
                 const open = new Date(item.OpenDate);
                 const today = new Date();
                 const diffTime = open - today;
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 
                 let dDayText = diffDays > 0 ? `D-${diffDays}` : "✨ OPEN";
-                let contentText = diffDays > 0 ? "🔒 오비가 소중히 지키고 있어요!" : item.Items;
+                let contentText = diffDays > 0 ? "🔒 오비가 소중히 지키고 있어요!" : (item.Items || item.Items);
 
                 container.innerHTML += `
                     <div class="capsule-card">
@@ -308,6 +303,7 @@
                 `;
             });
         } catch (e) {
+            console.error(e);
             document.getElementById('capsuleSpace').innerHTML = `<p style="text-align:center; color:#ff7675;">API 연결 확인이 필요합니다.</p>`;
         }
     }
