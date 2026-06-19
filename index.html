@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SERENDI ORBIT - 행복을 보관하는 우주 정거장</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         :root {
             --primary-purple: #6C5CE7;
@@ -55,12 +56,12 @@
 </head>
 <body>
 
-<div class="app-container">
+<div class="app-container" id="captureArea">
     <header>
         <h1>SERENDI ORBIT</h1>
     </header>
 
-    <div class="user-profile-bar">
+    <div class="user-profile-bar" data-html2canvas-ignore="true">
         <div class="profile-status">
             <div>👤 <span id="userName" style="color:var(--text-beige); font-weight:bold;">비로그인 상태</span></div>
             <div>🪐 <span id="currentRoom">공용 로비</span></div>
@@ -97,7 +98,7 @@
     </div>
 
     <section id="home-sec" class="content-section active">
-        <div class="record-card">
+        <div class="record-card" data-html2canvas-ignore="true">
             <h3>오늘 나의 소확행 기록하기</h3>
             <textarea id="feedContent" placeholder="여기에 오늘의 소소한 행복을 기록해보세요..."></textarea>
             <div class="meta-selects">
@@ -115,13 +116,13 @@
                 </select>
             </div>
             <button onclick="saveFeed()">궤도에 쏘아올리기 🚀</button>
-            <button onclick="downloadLogs()" style="background:#2d2654; margin-top:8px; font-size:0.8rem; padding:8px;">📥 현재 피드 일기 다운로드</button>
+            <button onclick="downloadFeedAsImage()" style="background:#2d2654; margin-top:8px; font-size:0.8rem; padding:8px;">📥 현재 피드 이미지로 다운로드</button>
         </div>
         <div id="feedSpace"></div>
     </section>
 
     <section id="capsule-sec" class="content-section">
-        <div class="record-card" style="border-left: 4px solid var(--primary-purple);">
+        <div class="record-card" style="border-left: 4px solid var(--primary-purple);" data-html2canvas-ignore="true">
             <h3>🫙 타임캡슐 만들기</h3>
             <input type="text" id="capTitle" placeholder="캡슐 제목">
             <input type="date" id="capDate">
@@ -134,12 +135,12 @@
     <section id="my-sec" class="content-section">
         <div class="record-card">
             <h3 style="color:var(--point-orange)">🚀 내가 우주에 쓴 기록 모아보기</h3>
-            <p style="font-size:0.85rem; color:#aaa; margin-bottom:10px;">로그인 인증된 이메일로 작성된 모든 글만 보안 조회됩니다.</p>
+            <p style="font-size:0.85rem; color:#aaa; margin-bottom:10px;" data-html2canvas-ignore="true">로그인 인증된 이메일로 작성된 모든 글만 보안 조회됩니다.</p>
             <div id="myFeedSpace"></div>
         </div>
     </section>
 
-    <nav>
+    <nav data-html2canvas-ignore="true">
         <div class="nav-item active" onclick="switchTab('home-sec', this)">🏠<span>HOME</span></div>
         <div class="nav-item" onclick="switchTab('capsule-sec', this)">🫙<span>CAPSULE</span></div>
         <div class="nav-item" onclick="switchTab('my-sec', this)">🚀<span>MY</span></div>
@@ -344,7 +345,7 @@
                         <div class="feed-body">${content}</div>
                         <div class="feed-footer">
                             <span>${emotion} · ${category}</span>
-                            <button class="btn-del" onclick="deleteItem('deleteFeed', '${id}')">삭제</button>
+                            <button class="btn-del" data-html2canvas-ignore="true" onclick="deleteItem('deleteFeed', '${id}')">삭제</button>
                         </div>
                     </div>`;
             });
@@ -385,7 +386,7 @@
                         <div class="feed-body">${content}</div>
                         <div class="feed-footer">
                             <span>${emotion} · ${category}</span>
-                            <button class="btn-del" onclick="deleteItem('deleteFeed', '${id}')">삭제</button>
+                            <button class="btn-del" data-html2canvas-ignore="true" onclick="deleteItem('deleteFeed', '${id}')">삭제</button>
                         </div>
                     </div>`;
             });
@@ -453,23 +454,27 @@
                         <h4 style="color:var(--text-beige);">${item.Title}</h4>
                         <p style="font-size:0.8rem; color:#aaa; margin:5px 0;">개봉일: ${new Date(item.OpenDate).toLocaleDateString()}</p>
                         <div style="background:rgba(0,0,0,0.2); padding:8px; border-radius:8px; margin-bottom:5px;">${contentText}</div>
-                        <button class="btn-del" onclick="deleteItem('deleteCapsule', '${item.ID}')">캡슐 파기</button>
+                        <button class="btn-del" data-html2canvas-ignore="true" onclick="deleteItem('deleteCapsule', '${item.ID}')">캡슐 파기</button>
                     </div>`;
             });
         } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ff7675;">캡슐을 가져오지 못했습니다.</p>'; }
     }
 
-    function downloadLogs() {
-        if(!loadedFeedsData || !loadedFeedsData.length) return alert("다운로드할 데이터가 없습니다.");
-        let txt = `=== SERENDI ORBIT 행복 일기 백업 ===\n\n`;
-        loadedFeedsData.forEach(item => {
-            txt += `[${new Date(item.Timestamp).toLocaleString()}] ${item.User || '익명'}님의 행복\n내용: ${item.Content}\n\n`;
+    // 📸 피드를 스냅샷 이미지(.png)로 저장하는 핵심 함수
+    function downloadFeedAsImage() {
+        const target = document.getElementById("captureArea");
+        
+        // 스크롤 영역 전체가 짤리지 않고 담기도록 설정하여 캡처 진행
+        html2canvas(target, {
+            useCORS: true,
+            backgroundColor: "#0F0C20",
+            scrollY: -window.scrollY
+        }).then(canvas => {
+            const link = document.createElement("a");
+            link.href = canvas.toDataURL("image/png");
+            link.download = `orbit_diary_${new Date().toISOString().slice(0,10)}.png`;
+            link.click();
         });
-        const blob = new Blob([txt], { type: 'text/plain;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `serendi_orbit_diary.txt`;
-        link.click();
     }
 </script>
 </body>
