@@ -27,6 +27,10 @@
         .login-input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); padding: 6px 10px; color: white; border-radius: 6px; font-size: 0.8rem; margin-bottom: 0; }
         .profile-status { display: flex; justify-content: space-between; align-items: center; }
         
+        /* 닉네임 설정 영역 스타일 */
+        .nickname-box { display: flex; gap: 6px; margin-top: 8px; background: rgba(255, 118, 117, 0.1); padding: 8px; border-radius: 8px; align-items: center; }
+        .nickname-input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); padding: 5px 8px; color: white; border-radius: 6px; font-size: 0.8rem; }
+
         .btn-group { display: flex; gap: 5px; margin-top: 8px; }
         .btn-sm { padding: 5px 10px; font-size: 0.75rem; border-radius: 5px; cursor: pointer; border: none; background: #444; color: white; font-weight: bold; }
         .content-section { padding: 20px; display: none; overflow-y: auto; flex: 1; }
@@ -40,12 +44,24 @@
         .meta-selects { display: flex; gap: 10px; margin-bottom: 10px; }
         select { flex: 1; background: #2D2654; border: none; color: white; padding: 8px; border-radius: 8px; font-size: 0.85rem; }
         button { width: 100%; background: var(--primary-purple); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        
+        /* 피드 아이템 및 댓글 스타일 */
         .feed-item { background: var(--card-dark); border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--point-orange); position: relative; }
         .feed-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: #aaa; margin-bottom: 8px; align-items: center; }
         .feed-user { color: var(--text-beige); font-weight: bold; }
         .feed-body { font-size: 0.9rem; line-height: 1.4; margin-bottom: 10px; }
-        .feed-footer { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--secondary-orbit); }
+        .feed-footer { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--secondary-orbit); margin-bottom: 10px; }
         .btn-del { background: none; color: #ff7675; width: auto; padding: 0; font-size: 0.75rem; cursor: pointer; font-weight: normal; }
+        
+        /* 댓글 레이아웃 */
+        .comment-section { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; margin-top: 5px; }
+        .comment-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; max-height: 120px; overflow-y: auto; }
+        .comment-item { background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; font-size: 0.8rem; line-height: 1.3; }
+        .comment-author { color: var(--secondary-orbit); font-weight: bold; margin-right: 5px; }
+        .comment-form { display: flex; gap: 6px; }
+        .comment-input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 6px 10px; color: white; border-radius: 6px; font-size: 0.8rem; margin-bottom: 0; }
+        .btn-comment-submit { width: auto; padding: 0 12px; font-size: 0.8rem; border-radius: 6px; background: var(--primary-purple); }
+
         nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 65px; background: #120E29; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; cursor: pointer; font-size: 0.75rem; }
         .nav-item.active { color: var(--text-beige); }
@@ -65,6 +81,11 @@
         <div class="profile-status">
             <div>👤 <span id="userName" style="color:var(--text-beige); font-weight:bold;">비로그인 상태</span></div>
             <div>🪐 <span id="currentRoom">공용 로비</span></div>
+        </div>
+        
+        <div class="nickname-box">
+            <span style="font-size:0.75rem; color:var(--text-beige); font-weight:bold; white-space:nowrap;">우주 닉네임 :</span>
+            <input type="text" id="userNicknameInput" class="nickname-input" placeholder="호출 명칭 설정 (미설정 시 이메일/익명)" oninput="saveNickname()">
         </div>
         
         <div class="login-form-container" id="loginFormArea">
@@ -93,7 +114,7 @@
     <div style="padding: 0 20px; margin-top: 10px;">
         <div class="obi-box">
             <div class="obi-avatar">🪐</div>
-            <div class="obi-text" id="obiMessage">"오늘 어떤 행복한 궤도를 발견했어?"</div>
+            <div class="obi-text" id="obiMessage">"오늘 어떤 행복한 궤도를 발견했어? (24시간 동안 보관돼!)"</div>
         </div>
     </div>
 
@@ -135,7 +156,7 @@
     <section id="my-sec" class="content-section">
         <div class="record-card">
             <h3 style="color:var(--point-orange)">🚀 내가 우주에 쓴 기록 모아보기</h3>
-            <p style="font-size:0.85rem; color:#aaa; margin-bottom:10px;" data-html2canvas-ignore="true">로그인 인증된 이메일로 작성된 모든 글만 보안 조회됩니다.</p>
+            <p style="font-size:0.85rem; color:#aaa; margin-bottom:10px;" data-html2canvas-ignore="true">내가 쓴 모든 역대 기록이 보관됩니다.</p>
             <div id="myFeedSpace"></div>
         </div>
     </section>
@@ -152,20 +173,35 @@
 
     let currentUser = localStorage.getItem('orbit_user_email') || null;
     let currentRoomId = localStorage.getItem('roomId') || 'default';
+    let userNickname = localStorage.getItem('orbit_user_nickname') || '';
     let loadedFeedsData = [];
 
     window.onload = () => {
+        if(userNickname) document.getElementById('userNicknameInput').value = userNickname;
         updateUI();
         loadFeeds();
     };
 
+    function saveNickname() {
+        const nick = document.getElementById('userNicknameInput').value.trim();
+        userNickname = nick;
+        localStorage.setItem('orbit_user_nickname', nick);
+        updateUI();
+    }
+
+    function getSenderName() {
+        if(userNickname) return userNickname;
+        if(currentUser) return currentUser.split('@')[0];
+        return '익명 행성';
+    }
+
     function updateUI() {
         if (currentUser) {
-            document.getElementById('userName').innerText = currentUser;
+            document.getElementById('userName').innerText = userNickname ? `${userNickname} (${currentUser})` : currentUser;
             document.getElementById('loginFormArea').style.display = 'none';
             document.getElementById('logoutFormArea').style.display = 'block';
         } else {
-            document.getElementById('userName').innerText = "비로그인 상태 (익명)";
+            document.getElementById('userName').innerText = userNickname ? `${userNickname} (익명)` : "비로그인 상태 (익명)";
             document.getElementById('loginFormArea').style.display = 'flex';
             document.getElementById('logoutFormArea').style.display = 'none';
         }
@@ -303,7 +339,7 @@
                 method: 'POST',
                 mode: 'cors',
                 headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify({ action: 'createFeed', roomId: currentRoomId, user: currentUser || '익명 행성', content, emotion, category })
+                body: JSON.stringify({ action: 'createFeed', roomId: currentRoomId, user: getSenderName(), content, emotion, category })
             });
             const result = await response.json();
             if(result.status === 'success') {
@@ -318,11 +354,24 @@
         container.innerHTML = '<p style="text-align:center; color:#666;">불러오는 중...</p>';
         try {
             const res = await fetch(`${GAS_WEB_APP_URL}?action=getFeeds&roomId=${encodeURIComponent(currentRoomId)}`);
-            loadedFeedsData = await res.json();
+            let rawData = await res.json();
             container.innerHTML = '';
             
-            if(!loadedFeedsData || !loadedFeedsData.length) {
+            if(!rawData || !rawData.length) {
                 container.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">기록된 행복이 없습니다.</p>';
+                return;
+            }
+
+            // ⏰ [하루 한 번 초기화] 24시간 이내의 기록만 필터링하는 기능
+            const now = new Date().getTime();
+            const oneDayMs = 24 * 60 * 60 * 1000;
+            loadedFeedsData = rawData.filter(item => {
+                const itemTime = new Date(item.Timestamp || item.timestamp).getTime();
+                return (now - itemTime) < oneDayMs;
+            });
+
+            if(!loadedFeedsData.length) {
+                container.innerHTML = '<p style="text-align:center; color:#888; padding:20px;">🪐 지난 24시간 동안 올라온 행복이 없습니다.<br>새로운 첫 행복 궤도를 쏘아올려 보세요!</p>';
                 return;
             }
             
@@ -333,6 +382,18 @@
                 const category = item.Category || item.category || '기타';
                 const id = item.ID || item.id || '';
                 
+                // 댓글 파싱 구조 설계 (기존 열 데이터에 댓글이 파이프| 기호로 누적 저장되어 온다고 가정 처리)
+                const commentsRaw = item.Comments || item.comments || '';
+                let commentsHtml = '';
+                if(commentsRaw) {
+                    commentsRaw.split('||').forEach(c => {
+                        const parts = c.split('::');
+                        if(parts.length >= 2) {
+                            commentsHtml += `<div class="comment-item"><span class="comment-author">${parts[0]}:</span>${parts[1]}</div>`;
+                        }
+                    });
+                }
+
                 const rawTime = item.Timestamp || item.timestamp;
                 const timestamp = rawTime ? new Date(rawTime).toLocaleDateString() : '';
 
@@ -347,9 +408,42 @@
                             <span>${emotion} · ${category}</span>
                             <button class="btn-del" data-html2canvas-ignore="true" onclick="deleteItem('deleteFeed', '${id}')">삭제</button>
                         </div>
+                        <div class="comment-section">
+                            <div class="comment-list">${commentsHtml ? commentsHtml : '<p style="font-size:0.75rem; color:#555;">아직 등록된 우주 통신(댓글)이 없습니다.</p>'}</div>
+                            <div class="comment-form" data-html2canvas-ignore="true">
+                                <input type="text" class="comment-input" id="reply-${id}" placeholder="따뜻한 한마디 전하기...">
+                                <button class="btn-comment-submit" onclick="submitComment('${id}')">전송</button>
+                            </div>
+                        </div>
                     </div>`;
             });
         } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ff7675;">데이터를 불러오지 못했습니다.</p>'; }
+    }
+
+    // 💬 댓글 업로드 연동 함수
+    async function submitComment(feedId) {
+        const inputEl = document.getElementById(`reply-${feedId}`);
+        const text = inputEl.value.trim();
+        if(!text) return alert("댓글 내용을 입력해 주세요.");
+
+        try {
+            const res = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({
+                    action: 'addComment',
+                    id: feedId,
+                    author: getSenderName(),
+                    content: text
+                })
+            });
+            const result = await res.json();
+            if(result.status === 'success') {
+                inputEl.value = '';
+                await loadFeeds();
+            } else { alert("댓글 전송 실패"); }
+        } catch(e) { alert("서버 통신 오류"); }
     }
 
     async function loadMyFeeds() {
@@ -460,11 +554,8 @@
         } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ff7675;">캡슐을 가져오지 못했습니다.</p>'; }
     }
 
-    // 📸 피드를 스냅샷 이미지(.png)로 저장하는 핵심 함수
     function downloadFeedAsImage() {
         const target = document.getElementById("captureArea");
-        
-        // 스크롤 영역 전체가 짤리지 않고 담기도록 설정하여 캡처 진행
         html2canvas(target, {
             useCORS: true,
             backgroundColor: "#0F0C20",
