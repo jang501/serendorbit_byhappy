@@ -170,7 +170,7 @@
 </div>
 
 <script>
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx0Eq9NKmgxHSMh6o1FCvBHHuMKB8TCyqeBG88vK1YiFkRdlosEkXltYTGS97HecV75/exec"; 
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyoDvWNrX8-Zx8OVjFEPqCOj-lK5Ql55TgHMa7sjTh-FOP3pt3SWF4OZ7M21Jqz3KTs/exec"; 
 
     let currentUser = localStorage.getItem('orbit_user_email') || null;
     let currentRoomId = localStorage.getItem('roomId') || 'default';
@@ -448,7 +448,7 @@
         
         const text = inputEl.value.trim();
         if(!text) return alert("댓글 내용을 입력해 주세요.");
-    
+
         try {
             const res = await fetch(GAS_WEB_APP_URL, {
                 method: 'POST',
