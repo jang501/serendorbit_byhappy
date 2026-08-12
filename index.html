@@ -448,7 +448,10 @@
         
         const text = inputEl.value.trim();
         if(!text) return alert("댓글 내용을 입력해 주세요.");
-
+        
+        const userEmail = params.user ? String(params.user).trim() : '익명';
+        const targetEmail = params.email ? String(params.email).trim() : '';
+        const targetRoomId = params.roomId ? String(params.roomId).trim() : 'default';
         try {
             const res = await fetch(GAS_WEB_APP_URL, {
                 method: 'POST',
