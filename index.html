@@ -45,7 +45,7 @@
         select { flex: 1; background: #2D2654; border: none; color: white; padding: 8px; border-radius: 8px; font-size: 0.85rem; }
         button { width: 100%; background: var(--primary-purple); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
         
-        /* 피드 아이템 및 댓글 스타일 (복구/보강) */
+        /* 피드 아이템 및 댓글 스타일 */
         .feed-item { background: var(--card-dark); border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--point-orange); position: relative; }
         .feed-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: #aaa; margin-bottom: 8px; align-items: center; }
         .feed-user { color: var(--text-beige); font-weight: bold; }
@@ -53,17 +53,17 @@
         .feed-footer { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--secondary-orbit); margin-bottom: 10px; }
         .btn-del { background: none; color: #ff7675; width: auto; padding: 0; font-size: 0.75rem; cursor: pointer; font-weight: normal; }
         
-        /* 💬 댓글 영역 전용 디자인 (선명하게 수정) */
+        /* 댓글 영역 전용 디자인 */
         .comment-section { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; margin-top: 8px; }
         .comment-title { font-size: 0.75rem; color: var(--secondary-orbit); margin-bottom: 6px; font-weight: bold; }
         .comment-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; max-height: 120px; overflow-y: auto; }
-        .comment-item { background: rgba(0,0,0,0.3); padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; line-height: 1.3; border-left: 2px solid var(--secondary-orbit); }
+        .comment-item { background: rgba(0,0,0,0.3); padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; line-height: 1.3; border-left: 2px solid var(--secondary-orbit); word-break: break-all; }
         .comment-author { color: var(--text-beige); font-weight: bold; margin-right: 5px; }
         .comment-form { display: flex; gap: 6px; }
         .comment-input { flex: 1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); padding: 6px 10px; color: white; border-radius: 6px; font-size: 0.8rem; margin-bottom: 0; }
         .btn-comment-submit { width: auto; padding: 0 12px; font-size: 0.8rem; border-radius: 6px; background: var(--primary-purple); white-space: nowrap; }
 
-        nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 65px; background: #120E29; display: flex; justify-around: align-items; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); z-index: 100; }
+        nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 65px; background: #120E29; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; cursor: pointer; font-size: 0.75rem; flex: 1; }
         .nav-item.active { color: var(--text-beige); }
         
@@ -170,7 +170,7 @@
 </div>
 
 <script>
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwD5lrKsQQeYUtFD46Mb_xsJaQSK6qNfyoyrSjMHv0eOvef3wCnGAvcKkAtdfLx8vQV/exec"; 
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyoDvWNrX8-Zx8OVjFEPqCOj-lK5Ql55TgHMa7sjTh-FOP3pt3SWF4OZ7M21Jqz3KTs/exec"; 
 
     let currentUser = localStorage.getItem('orbit_user_email') || null;
     let currentRoomId = localStorage.getItem('roomId') || 'default';
@@ -207,6 +207,18 @@
             document.getElementById('logoutFormArea').style.display = 'none';
         }
         document.getElementById('currentRoom').innerText = currentRoomId === 'default' ? "공용 로비" : `${currentRoomId}번 궤도`;
+    }
+
+    // ⏰ 날짜 포맷 차이 보정용 변환 함수
+    function parseSafeDate(dateStr) {
+        if(!dateStr) return new Date(0);
+        let d = new Date(dateStr);
+        if(!isNaN(d.getTime())) return d;
+        
+        // 구글 시트 한국어 날짜형식("2026. 8. 12. 오후 3:00:00") 처리
+        const formatted = String(dateStr).replace(/오후/g, 'PM').replace(/오전/g, 'AM').replace(/\./g, '-');
+        d = new Date(formatted);
+        return !isNaN(d.getTime()) ? d : new Date(0);
     }
 
     async function userAuth(type) {
@@ -363,12 +375,13 @@
                 return;
             }
 
-            // ⏰ 24시간 이내 기록 필터링
+            // ⏰ 정확한 24시간 필터링 적용
             const now = new Date().getTime();
             const oneDayMs = 24 * 60 * 60 * 1000;
+            
             loadedFeedsData = rawData.filter(item => {
-                const itemTime = new Date(item.Timestamp || item.timestamp).getTime();
-                return (now - itemTime) < oneDayMs;
+                const itemTime = parseSafeDate(item.Timestamp || item.timestamp).getTime();
+                return (now - itemTime) <= oneDayMs && itemTime > 0;
             });
 
             if(!loadedFeedsData.length) {
@@ -381,22 +394,26 @@
                 const content = item.Content || item.content || '';
                 const emotion = item.Emotion || item.emotion || '😊';
                 const category = item.Category || item.category || '기타';
-                const id = item.ID || item.id || '';
+                const id = String(item.ID || item.id || '');
                 
-                // 💬 댓글 데이터 파싱 (Comments 문자열 구조)
+                // 💬 댓글 데이터 완벽 파싱 (|| 구분을 문자열/배열 모두 지원)
                 const commentsRaw = item.Comments || item.comments || '';
                 let commentsHtml = '';
-                if(commentsRaw) {
+                
+                if(typeof commentsRaw === 'string' && commentsRaw.trim() !== '') {
                     commentsRaw.split('||').forEach(c => {
+                        if(!c.trim()) return;
                         const parts = c.split('::');
                         if(parts.length >= 2) {
                             commentsHtml += `<div class="comment-item"><span class="comment-author">📡 ${parts[0]}</span>: ${parts[1]}</div>`;
+                        } else {
+                            commentsHtml += `<div class="comment-item">${c}</div>`;
                         }
                     });
                 }
 
                 const rawTime = item.Timestamp || item.timestamp;
-                const timestamp = rawTime ? new Date(rawTime).toLocaleDateString() : '';
+                const timestamp = rawTime ? parseSafeDate(rawTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
 
                 container.innerHTML += `
                     <div class="feed-item">
@@ -410,7 +427,7 @@
                             <button class="btn-del" data-html2canvas-ignore="true" onclick="deleteItem('deleteFeed', '${id}')">삭제</button>
                         </div>
                         
-                        <!-- 💬 댓글 전용 영역 복구 완료 -->
+                        <!-- 💬 댓글 전용 영역 -->
                         <div class="comment-section">
                             <div class="comment-title">💬 우주 통신 (댓글)</div>
                             <div class="comment-list">${commentsHtml ? commentsHtml : '<p style="font-size:0.75rem; color:#666;">아직 전달된 메시지가 없습니다.</p>'}</div>
@@ -427,6 +444,8 @@
     // 💬 댓글 전송 처리 연동
     async function submitComment(feedId) {
         const inputEl = document.getElementById(`reply-${feedId}`);
+        if(!inputEl) return alert("댓글 입력창을 찾지 못했습니다.");
+        
         const text = inputEl.value.trim();
         if(!text) return alert("댓글 내용을 입력해 주세요.");
 
@@ -437,7 +456,7 @@
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({
                     action: 'addComment',
-                    id: feedId,
+                    id: String(feedId),
                     author: getSenderName(),
                     content: text
                 })
@@ -446,7 +465,7 @@
             if(result.status === 'success') {
                 inputEl.value = '';
                 await loadFeeds();
-            } else { alert("댓글 전송 실패"); }
+            } else { alert(result.message || "댓글 전송 실패"); }
         } catch(e) { alert("서버 통신 오류"); }
     }
 
@@ -470,10 +489,10 @@
                 const content = item.Content || item.content || '';
                 const emotion = item.Emotion || item.emotion || '😊';
                 const category = item.Category || item.category || '기타';
-                const id = item.ID || item.id || '';
+                const id = String(item.ID || item.id || '');
                 
                 const rawTime = item.Timestamp || item.timestamp;
-                const timestamp = rawTime ? new Date(rawTime).toLocaleDateString() : '';
+                const timestamp = rawTime ? parseSafeDate(rawTime).toLocaleDateString() : '';
 
                 container.innerHTML += `
                     <div class="feed-item" style="border-left: 4px solid var(--secondary-orbit);">
